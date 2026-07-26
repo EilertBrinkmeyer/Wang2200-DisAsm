@@ -1,0 +1,35 @@
+7e6e:dieser code ist nicht auf der 2200T, daher kann ich ihn nicht korrigieren
+7e71:dieser code ist nicht auf der 2200T, aber der ist korrekt
+7e72:dieser code ist nicht auf der 2200T, aber der ist korrekt
+
+#
+7f72:set tape device in idle mode (stop tape/leave head in)
+7f74:set tape device to backward read operation
+7f80:shift left F2
+7f81:branch if received bit from tape is 0
+7f82:  else shift a 1 in
+7f88:branch if IBS (one bit received)
+7f8a:test carry
+
+7f8e:KH=0 if IB5=0
+7f8f:branch if IB5 not active
+7f90:KH=1 if IB5=1
+7f99:recalc CSS start
+7fa8:in 2200T code, there is the same statement. Probably 2200B just had a buggy statement here. BUGFIX
+7fab:get operator stack pointer
+
+7fb4:parse-mode(=0)? 
+7f70:test carry
+7fd9:test carry
+7fdc:clear carry
+
+7fba:in 2200T code, there is the same statement. Probably 2200B just had a buggy statement here. BUGFIX
+7fbc:in 2200T code, there is the same statement. Probably 2200B just had a buggy statement here. BUGFIX
+
+7fe3:save ST2
+7fe5:clear run flags
+7fea:restore ST2
+
+
+#7e50:branch, if current device type = 0
+#7e51:for other devices, clear ram[0050-0053]

@@ -1,0 +1,1983 @@
+0004:point AUX0 to [0000]
+0006:set zero indicator to create a zero arg for rnd()
+0007:performs a RND(0) to create pseudo-random seed
+0009:read memory selector
+0010:ram0054=xFF8(highmem)
+0013:write 00000000 to maxmem location
+0015:set AUX9=highmem+1
+0016:initialize pause parameter to zero
+0019:clear protected program flag
+001c:clear COM variables
+001e:new value for pointer to next free symbol table entry -> clears DIM variables!
+0023:initialize AUX7 to user text area
+0027:wipe 0040..004F
+0029:write fffF to ram006E
+002b:AUX7 is address of IO buffer
+002c:skip 2 nibbles
+002d:PC=IO buffer+2
+002f:clear 2 bytes at beginning of IO buffer
+0035:copy console mode (input=1,immediate=0) to F5
+0036:copy current device type to F6
+0037:only device type 0 gets a prompt
+003c:in command mode F3120=A2A8
+003e:else F3210=90A8
+0041:write that pattern to ram0084
+0044:INPUT mode if bit0 is set
+0046:reset state of HALT/STEP
+0047:this sends the command prompt
+0048:PC=address of IO buffer
+004b:F3210=PC+2+0x260
+0054:branch, if cassette tape device is active
+0055:0xF is a special device type for cassette tape device ???
+0057:branch, if other than console device is active
+005b:0x0A signals that the input line has completed (CR from CI or teletype)
+005e:branch, if INPUT mode
+005f:here, if command mode
+0060:parse buffer for INPUT statement
+0069:this sends the INPUT prompt
+0072:wipe ram[0008..000F]
+00cc:point to Start of user text area
+00cf:point to address of current BASIC line
+00d2:point to begin of I/O buffer
+00e0:PC1=0 is "line not found"
+00ed:resolve pointer
+00ef:branch if no more program line (end of program)
+00f2:branch, if no line number found
+00f3:successfully advanced to next program line
+00fe:clear DATA pointer
+0102:must be 0D else ERR10
+0104:if no lineno given,clear variables
+010a:indicate run mode "5"?
+010e:issue error 11 missing line number
+0112:new value for pointer to next free symbol table entry -> clears DIM variables!
+0113:indicate run mode "1"?
+0116:get "execution" mode
+0117:reset "execution" mode
+011b:branch, if we already hit the end of program
+011d:execute the first command
+011e:issue error 10 incomplete statement
+0122:special^ERR23 returns from errorhandler!
+0123:look for atom type 8 (abs,sqr,cos,exp,int,log,sin,sgn,rnd,tan,arc,atn)
+0126:not found, return to caller
+012d:get argument of the type 8 math function
+0133:get DEG GRAD RAD mode
+0134:and store in KH
+0135:call appropriate math code&return math error in ST2-1
+0138:re-set the run flag in ST2-1
+013f:set operator code 0x?F = tan()
+0140:branch if token 0xCA TAN(
+0142:set operator code 0xD0 = sin()
+0143:branch if token 0xC7 SIN(
+0144:set operator code 0xD1 = cos()
+0145:handle token 0xC3 COS(
+0147:look for arcus functions (tan,sin,cos)
+014d:get old mode value
+014e:set immediate input mode 
+014f:set current device type to console
+0150:branch if last mode was "input"
+0161:jump table index for "LIST DC"
+0164:point PC to LIST device entry
+0165:select LIST device
+0168:test on character "S"
+016c:F6=1->return single line,if upper boundary missing
+016e:no line-number given->set defaults
+016f:set lower boundary
+0171:no upper boundary given->copy lower boundary to upper
+017a:test"execution" mode
+017c:branch if not saving to cassette tape
+017d:branch if bit 0 is set (?)
+017e:assemble the program header record
+0180:point AUX0 to file name location in IObuffer
+0181:write 4 as upper control byte 
+0183:if saving in protected mode, write 5 as upper control byte
+0188:PC1=0 is "line not found"
+0189:branch if saving to cassette tape or punched tape
+0190:test"execution" mode
+0192:set normal LIST mode (not LIST S)
+01a7:read LIST S flag
+01a8:branch, if normal list
+01a9:increment LIST S counter
+01aa:done, when 15 lines LISTed
+01ac:when HALT/STEP not pressed, continue listing
+01ad:when HALT/STEP pressed, clear the LIST S mode
+01b1:set 9999 as upper boundary
+01b9:get lineno-range lower boundary
+01c2:new value for pointer to next free symbol table entry -> clears DIM variables!
+01eb:write end-of-file byte 0xFE
+01ee:write control byte for trailer record (0x20 or 0x30 if protected)
+01f2:SAVE to cassette tape is done here
+#not common: 01f8..01fe
+0221:grab atom list entry for given token
+0222:save entry type in F7&cleanup token adress
+0226:save PC to AUX1
+0227:get source code pointer into PC
+0228:move PC to F3F2F1F0
+0229:store source code pointer to temp buffer 0000
+022a:restore PC from AUX1 (pointer to token length byte)
+022b:read length byte
+022d:  and store in F3 and F2 (max length is 15)
+022e:read one character of current token
+022f:save token pointer to AUX1
+0231:copy token character to F1F0
+0232:compare F1F0 with next character in source code
+0233:branch if not equal
+0234:decrement length counter
+0235:restore token pointer from AUX1
+0236:loop until all characters compared
+023b:restore source code pointer from temp buffer 0000 (begin of untokenized string)
+023c:AUX0 = begin of untokenized string plus 1 byte
+023d:PC=end of untokenized string
+023e:shift left rest of line, untokenized string is deleted, one byte gap remains 
+023f:restore token pointer from AUX1
+0240:read token code from token entry
+0241:restore source code pointer, points to gap of 1 byte
+0242:write upper token code into source code
+0243:write lower token code, adjust source pointer AUX4
+0244:flag 'token replaced'
+024a:already tokenized?
+024F:expected token type?
+0250:fetch address of execution code
+025c:PC now points to the selected entry of the word_list jump table
+025d:switch to ROM mode
+025e:PC now points to begin of the selected word_list
+025f:read word list length byte
+0260:adjust PC by 2 nibbles, PC now points to first token entry
+0262:store word list length in KH KL
+0263:switch to ROM mode
+0264:read the code address of the token
+0265:switch to RAM mode
+0266:point PC to length byte of token and save in AUX0
+0267:store code address in temp buffer 0004
+0268:restore PC from AUX0
+026a:branch, if token matches
+026b:otherwise: skip current token
+026d:skip over remaining characters
+026f:until end of token string
+0271:decrement token counter
+0275:flag 'not found'
+0277:restore code adress from temp buffer 0004
+0289:_list_line_token_or_line_number
+028c:if CR, print it and end line listing
+0297:get current IO buffer pointer
+0298:fetch line number in F3210
+0299:advance IO buffer pointer
+02a0:print text READY
+02b4:Ok, it's a number 
+02b6:test upper limit 9
+0322:PC=current CSS stack pointer
+0323:push return address on CSS stack
+0324:adjust CSS stack pointer
+032a:check if CSS stack hits other stack
+0331:adjust CSS stack pointer by 2 byte
+0336:check if bottom of CSS stack reached
+03be:done with loop
+0451:copy factor1 to PC4 and PC3
+0453:copy factor2 to F5 and F4
+0455:init result to zero
+0456:init loop counter (factor2 has 8bits)
+0458:if current bit is set, add factor1 to result
+0459:add factor1 to result
+045b:take care of carry
+045d:decrement loop counter
+045f:double the result for each bit in factor2
+0463:left shift the bits in factor2. not sure, if really a carry can happen from F3 to F4 ?
+0472:hold variable name, digit and type in AUX1
+0473:get symbol table pointer
+0475:branch, if symbol not found
+0477:compare type of existing symbol to new symbol
+0478:PC holds address of pointer to next symbol
+0479:skip over symbol letter
+047b:skip over symbol digit
+0486:xor the num/alpha flag
+0487:branch, if different
+0488:branch, if no array type
+0489:branch, if no array type
+0490:branch, if symbol not found
+0492:branch, if not an array (try next symbol)
+0493:copy alpha bit to F5
+0494:branch, if symbol type does not match (try next symbol)
+0495:matching symbol was found
+0499:PC points to (next) symbol storage
+049a:PC now holds symbol name, digit and type
+049b:compare letter and digit of newly DIMmed symbol to existing symbol
+04a1:same symbol already exists->F4=1
+04a4:PC now points to the address of next symbol
+04a5:get address of next symbol
+04a6:reached end of symbol table?
+04a7:test next symbol
+04a8:symbol table scanned, but not found->F4=0
+04ac:copy current start of symbol table in AUX0
+04ae:branch, if symbol table is not empty
+04af:load null pointer 
+04b1:copy address of first symbol table entry (or null pointer)
+04b2:get symbol letter, digit and type in F3210
+04b3:branch, if numeric variable
+04b5:branch, if symbol type is array
+04b6:this symbol needs 16 nibbles of storage
+04ba:store pointer to symbol value storage in AUX0
+04bb:initialize single numeric value to zero
+04bc:get pointer to symbol value storage from AUX0
+04bd:???
+04be:address of next symbol table entry
+04bf:...into header
+04c0:???
+04c1:symbol letter, digit and type
+04c2:...into header
+04c3:current PC is new start-of-symbol-table->update AUX5
+04c7:get array dimensions
+04c8:calculate number of array elements
+04c9:more than 4095 array elements (4096*16nib = 32kb, that's the whole mem)
+04cd:F3210=F3210*16, that's the number of nibbles needed (BUT WHAT IS IN PC1 rsp. F0 ??? BUG?)
+04ce:save nibble count in AUX1
+04d0:copy nibble count to PC
+04d1:...and to F3210
+04d2:PC=symbol value storage pointer
+04d3:constant byte is 00
+04dc:clear upper counter registers
+04de:PC=current start of symbol table
+04df:test new start of symbol table after memory allocation
+04e0:branch to error, if memory not sufficient (BUG?? memory is tested to be negative, not if it touches the text area or even the system area)
+04e1:copy new calculated start of symbol table to AUX5
+04e3:F3210=current end of CSS stack (coming up from bottom)
+04e4:add an extra 16 nibbles to top of CSS stack (space needed for symbol letter, digit, type, length and array size)
+04e7:PC=new start of symbol table
+04e9:branch to error, if both pointers overlap
+04ec:DIM mode is 2
+04ee:COM mode is 1
+04f0:skip all. var def already done during parse
+04f3:repeat_for_all_symbols
+#not common: 04f5..04fd
+0501:flag for type NUMERIC
+0504:flag var type ALPHA
+0506:branch if scalar symbol
+0507:error->pseudo symbols must be scalar
+0508:get first array dimension
+050b:set single dimension and return to _dim_end_of_array
+050c:get second array dimension, if any
+050d:flag two dimensional array
+0510:copy symbol digit to F1
+0511:copy symbol type to F0
+0512:write variable digit and type
+0513:branch if numeric variable
+0514:get length of alpha variable
+0515:branch if no number given
+0517:see if length 0
+0518:length 0x40 is OK
+0519:check if length >0x3F
+051b:set default length 16
+051f:write max string length to ram0008
+0520:do NOT assign space for this symbol !?
+0523:branch, if type numeric
+052c:branch, if DIM mode
+052f:branch, if DIM mode
+0530:PC=current symbol table pointer
+0533:branch, if DIM mode
+0534:store current symbol table pointer ...
+0535:... as new start of COM symbol table
+0537:set second dimension = 1
+0539:set flag for single dimension array
+053b:if alpha type, continue with length parameter
+053c:if DIM mode, branch to array element error (DIM on numeric only valid for arrays)
+053d:continue with length parameter
+0549:assume scalar numeric
+054c:assume array variable
+054f:write variable digit and type
+0550:branch if array type
+0551:branch if parsing in immediate mode (parse&execute)
+055b:branch if not an array variable
+055d:push array size (2dim)
+0567:branch if array allowed
+0568:e.g. FOR A(3)=1 TO 2
+056a:branch if parsing in immediate mode (parse&execute)
+0570:branch if this symbol is not an array
+057a:eval 1st dimension
+057c:branch if only one dimension
+0583:get current operator stack pointer
+0584:peek on operator on top of stack
+0585:copy variable type to F6
+0586:branch if operator type 3x (indicates assignment?)
+058a:branch if parsing in immediate mode (parse&execute)
+058f:branch if only one dimension
+0591:get 2nd index in KLKH
+0594:get 1st index in F5F4
+0596:get address of array from stack
+0597:   and skip next var ptr
+0598:get 1st dimension in CLCH
+0599:index <= dimension ?
+059b:get 2nd dimension in CLCH
+059d:branch if only one dimension
+059e:prepare to multiply index by dimension
+05a5:other index <= other dimension ?
+05a7:add 2nd index to elements. Result in F2F5F4
+05ac:branch if more than 4096 array elements
+05ad:restore PC, points to first array element
+05af:branch if alpha variable
+05b0:increase PC by number elements times 16 (each number has 16 nibbles)
+05b5:push address of array element to stack
+05b7:push operator 0x30 to op stack (overwrites prev op)
+05bb:get string element length in CLCH
+05bc:double length to F1F0
+05be:copy length to KHKL
+05c0:copy element number to F7F3F2
+05c3:calc first block size 
+05c4:restore PC, points to first array element
+05c6:increase PC by first block
+05c7:branch if no more blocks to add 
+05c8:double length to F3F2
+05cb:number of blocks to F1F0
+05cc:save PC
+05cd:calculate block size 
+05cf:restore PC
+05d0:increase PC4PC3 by block size
+05d2:and finish tasks
+0602:read from top of stack
+0603:adjust stack pointer
+0607:loop 8 byte
+060e:adjust stack pointer
+0611:get adr of value stack
+062c:F1F0=10*F1F0
+0638:F1F0=F1F0+CH
+063e:branch if "+" sign
+063f:branch if "-" sign
+0640:set source pointer back to last char (it was not a sign)
+0644:push operator "70" ('do_calc' ?)
+0646:branch, if "-" sign found
+064F:push operator "A1" (subtract) ?
+0653:wipe number scratch area ram00A8
+0656:push null to stack. this will calculate 0-<op>
+065a:bracketed expression->recursive evaluate_expression call
+0660:branch if number found
+066a:operator code A0 'addition'
+066c:cannot be [+-*/], check for ^
+066d:branch if plus sign found
+066e:branch if not minus sign
+066f:operator code A1 'subtraction'
+0671:save new operator code to ram0000
+0672:get current operator stack pointer
+0674:reverse new operator
+0675:add top-of-stack operator
+0676:branch if both are same level (add/sub, mul/div, or power)
+0677:branch if new operation is same or lower level
+0678:clear operator repeat mode
+0679:calc operation with lower precedence
+067a:restore new operator code from ram0000
+0681:set operator repeat mode
+0686:operator code C0 'power'
+0689:* found, set operator code B0
+068a:/ found, set operator code B1
+068b:no math operator found, restore source code pointer (ungetch)
+068f:in TRACE mode, print <var>=<value>
+0694:fetch stack pointer to PC
+0695:copy of stack pointer to AUX1
+0697:use top of stack as temp buffer for source
+069c:copy 8 byte
+0699:branch if current operator is not assignment
+069a:get target address from stack
+069b:target addr to AUX1, source addr to PC
+069d:read from source
+069f:copy to target
+06a1:until whole number done
+06a3:PC=PC-16, restore address pointer to begin of result
+06a4:          for assignment to next variable
+06a6:source addr must be in AUX1
+06a8:restore operator stack pointer (un-pop last operator)
+06ce:print text TRANSFER TO
+0703:force device type to console
+0709:ERR23 occurred?(no program statements)
+0755:print text ^ERR
+0761:PC1=0 is "line not found"
+0792:error when not a digit
+0793:error when null
+0794:error when >=8
+0795:error when 7
+0798:#1->00C8 #2->00D8 etc.
+079e:branch if normal GOSUB
+07a3:fetch gosub marker in KHKL
+07a5:and search matching DEFFN statement
+07a7:done if no arguments
+07b4:done if no arguments
+07b5:eat any expressions and quoted strings
+07bd:closing parenthesis must follow
+07c1:save target of GOSUB
+07c3:GOSUB marker for operator stack
+07c6:restore target of GOSUB
+07ce:handle operator type 20 (FOR)
+07d0:adjust stack pointer, emulates pop of 22 byte(throw away the FOR parameters)
+07d1:this ends an open FOR-Loop when exiting a subroutine (very programmer friendly!)
+07d5:handle next operator
+07d8:handle operator type 10 (GOSUB)
+0809:ram001c=0
+0815:loop to accept next variable
+0818:ram001c=2
+0860:when no function identifier found, branch to DEFFN' check
+0863:set flag for pseudo symbol
+088b:95 is token STOP
+08a1:PC1=0 is "line not found"
+08a8:read INPUT mode
+08a9:branch if not in INPUT mode
+08ac:exit if comma follows
+08af:if CR, update line pointer and exit
+08b1:CLCH enthält das untere Byte der IO Buffer adresse
+08b2:operator stack pointer in PC. Fehlt hier nicht ein RAM Read ??????
+08b3:ein Vergleich mit 0x38 passt eher zu einem operator
+08b5:eat number from stack (if not operator 0x38)
+08b9:ERR29_illegal_data_format (during INPUT)
+08be:peek current operator code
+08d0:save PC in AUX0
+08d1:save string length in ram[0000]
+08d2:get current and max horizontal printer position
+08d6:new line, if output would exceed 255 print positions
+08d7:new line, if output would exceed devices' max print positions
+08df:restore length from ram[0000]
+08e0:restore PC from AUX0
+0904:start from begin of basic program
+090a:end of program found, return with F7=0
+090b:advance pc to position of line number
+0913:desired line number found?
+091c:line found, return F7=1
+0920:save PC (pointer to IO buffer)
+0922:clear line counter for this input
+0923:restore PC (pointer to IO buffer)
+0924:clear character counter
+0926:save PC (pointer to IO buffer)
+0928:restore PC (pointer to IO buffer)
+092a:save PC (pointer to IO buffer)
+092b:save pressed key in F5F4
+092e:restore pressed key from F5F4
+0932:CR found. Test if LIST S mode is active
+0933:and other key forces LIST S mode off
+0934:restore PC (pointer to IO buffer)
+0935:when IB9 set, then function key has been pressed
+0936:handle SF key (deffn') ORIGCODE= B 09C7 (SF_key_handler)
+0938:skip over 0x00 character
+093a:skip over 0x7F character
+093d:branch when HEX 5F (works like RUBOUT)
+093f:branch when BACKSPACE
+0940:branch when 0xEx (look for LINE ERASE or NEXT STMT)
+0941:increment program line length counter
+0943:if>=192 then ^ERR45_program_line_too_long
+0944:write character into IO buffer
+0946:  and increment IO buffer pointer
+0948:when token was input, expand the token text
+0949:  else print character
+094f:handle backspace if IO buffer is not empty
+0951:adjust IO buffer pointer by 1 character backwards
+0953:decrement program line length counter
+0956:branch if deleted position is not a token
+0957:save deleted token in F1F0
+0959:copy position counter MSD
+095a:save current PC (points to deleted position)
+095e:this just walks thru the token string
+095c:preset the BACKSPACE character
+095f:decrement token length counter
+0960:branch if counter=0 (loop runs length-1 times)
+0962:send BACKSPACE
+0964:this reads the last character of the token string
+0965:branch, if this is a letter
+0967:send BACKSPACE
+096d:copy token to F1F0
+096f:save F7
+0970:save PC
+0972:restore PC
+0975:last-line-number-found = 0
+0976:set start pointer for line number
+0978:branch if no more line is found
+0979:store last-line-number-found
+097b:get last-line-number-found
+097d:increment line number by 10
+0985:MSN to form ascii numbers
+098e:copy 1000's digit to IO buffer
+0990:copy 100's digit to IO buffer
+0992:copy 10's digit to IO buffer
+0994:copy 1's digit to IO buffer
+0999:increment line length counter by length of new line number
+099b:prepare SPACE character
+09a1:test LIST S flag
+09a2:branch if LIST S not in progress
+09a5:CL always zero here, hence writes 0 to F7 (code below seems used by someone else?)
+09ac:branch if called from LIST S-handler
+09af:branch if STMT NUMBER key (E6)
+09b0:branch if LINE ERASE key (E5)
+09b1:else (other HEX(E?)) load HEX(03), screen erase
+09b5:get number of lines for current input (all must be erased)
+09b6:copy to F7 (line counter)
+09b7:send carriage return to CO
+#not common: 09ba..09c3
+09c4:prepare backslash character
+09c5:"\"indicates a non-completed line (no need to execute)
+09ca:gosub marker in KHKL
+#not common: 09cc and 09ce
+09d1:done if final double quote found
+09d2:write next character to program line buffer
+09d5:increase program line length counter
+09d7:if>=192 then ^ERR45_program_line_too_long
+09d8:copy next character from deffn' string
+09da:  and print it
+09e0: ORIGCODE= B L0109
+09e7:point PC to file name buffer
+09e8:initialize length counter
+09e9:read character from file name buffer
+09ea:write character into IO buffer
+09ed:loop until 8 characters processed
+0a0a:'2' means number not required
+0a0b:'1' indicates decimal point found
+0a0c:stores position of decimal point
+0a0d:digit counter
+0a0e:stores high exp
+0a0f:stores low exp
+0a17:branch if not a digit
+0a19:branch if odd ram location
+0a1a:write digit to lower nibble
+0a1b:increment digit counter
+0a1c:allow max 13 digits
+0a1f:write digit to upper nibble
+0a22:store position of decimal point
+0a24:test if decimal point
+0a26:flag decimal point already found
+0a28:branch if already digits collected
+0a29:no digits yet. leave if number not required
+0a2a:else print ^ERR19
+0a30:check if exp char "E" found 
+0a32:check if "+" or "-" follows
+0a34:branch if negative exponent found
+0a36:just eat the exp "+" sign
+0a39:digit must be there, else ^ERR20
+0a3d:if 2nd exp digit found,move 1st exp digit to "exp high" position
+0a37:no exp sign found, restore source text pointer
+0a59:copy carry in F4
+0a88:check for literal or alpha string
+0a8b:branch if variable or literal found
+0a8c:else try to evalute an expression
+0a8f:left operator is numeric->force numeric comparison
+0a90:reset comparison flags
+0a93:test if "<"
+0a95:flag "<" found
+0a98:test if ">"
+0a9a:flag ">" found
+0a9d:flag "=" found
+0a9e:if no operator found....
+0a9f:... issue ^ERR14_missing_relation_operator
+0aa2:store F7 in scratch
+0aa3:branch, if this is string comparison
+0aaa:restore F7 from scratch
+0aac:do the numeric compare
+0ab8:get 2nd string to compare with
+0abd:...and return to 0abe
+0aea:clear input strobe
+0aeb:SR when new input strobe found
+0aee:read ram[004c]
+0aef:loop, if we are still in input mode (who should change that on a single threaded system ??)
+0af1:test HALT/STEP-key
+0af2:H/S key is STEP, when pressed in idle mode
+0af4:repeat 0x32=50 times
+0af6:this NUL character
+#not common: 0af9..0afe
+0b02:save ST1 in F3
+0b09:reset horizontal printer position
+0b0b:horizontal position is not incremented for control codes 0x00-0x0F
+0b0d:save ST1 in F3
+0b0e:select RAM adressing mode
+0b10:no auto-CR when device type 4
+0b11:increment horizontal position
+0b13:compare current horizontal position with max position
+0b19:fall thru to send CR
+0b1e:save PC in AUX8
+0b22:save ST1 in KL
+0b23:select RAM adress mode
+0b28:read from ram0088
+0b29:restore ST1 from KL
+0b2a:KL=0A
+0b2c:KL=00 (device type 2 does not get auto LF)
+0b2e:KL=0A
+0b2f:restore saved PC
+0b34:restore F7 (ignore token type)
+0b35:skip 2 bytes (token code pointer)
+0b39:get token length
+0b3a:and copy to F1F0
+0b3d:store wanted line number in AUX1
+0b41:branch, if end of program reached
+0b42:PC=wanted line number
+0b43:compare line numbers
+0b44:branch, if found
+0b46:store the address of the line
+0b4c:test if lower stack address reached
+0b61:if non-header record, set sync pattern to 01
+0b63:if     header record, set sync pattern to 10
+#not common: 0b6c..0b70
+0b74:DATALOAD DA/DC/BA/BT
+0b79:flag this as a dataload operation
+0b7a:if device type=1, branch to cassette tape code
+0b82:branch if this was a program record (read next)
+0b83:branch if this was not a data header record (read next)
+0b84:data header record found. Now get pointer to file name inIObuffer
+0b86:branch if file name does not match (read next)
+0b89:DATALOAD <filename> is done after finding the header record. De-select tape device.
+0ba5: ORIGCODE= B L0BA3
+0bef:branch if data record found
+0bf0:position tape to old position
+0bf3:branch if this is a program record
+0bf4:branch if this is a trailer record
+0bf5:data record successfully read
+0bf6:fetch PRN (phys.rec.number) and set AUX12 to begin of data
+0bf8:position tape before trailer record
+0bfa:de-select tape device
+0bfc:cleanup stack if operator 0x30 or 0x38 ORIGCODE=B 09E3 (verb_rem)
+0c0b:branch if number is zero
+0c0c:this also sets AUX1 to point to constant ln(10)
+0c10:assemble number 0.5 (5E-01)
+0c14:number 0.5 ready in op2
+0c16:divide op1 by 2 (sqrt in logarithm level)
+0c34:branch if RAD mode
+0c35:branch if GRAD mode
+0c36:point PC to constant 90
+0c3e:point PC to constant PI/2
+0c42:point PC to constant 100
+0c4d:copy 1st number to op2
+0c50:copy 2nd number to op1
+0c52:enable vertical adressing mode
+0c53:switch to parse-only mode
+0c59:copy each digit
+0c63:end vertical adressing mode
+0c68:flip sign of op2
+0c6a:vertical mode! CH is from 'other' number
+0c6b:done when adding 0
+0c6c:when summand1 is zero...
+0c6d:..dont add but just copy summand2
+0c70:store signs of summand1 in F1
+0c71:xor both signs in F0
+0c72:branch when mantissa signs differ
+0c74:difference of both low  exponents in F5
+0c75:difference of both high exponents in F6
+0c77:swap summands
+0c78:load low exponents again
+0c7a:branch if summand1 is positive
+0c7b:else swap summands
+0c7d:add both low  exponents in F5
+0c7e:add both high exponents in F6
+0c81:branch if summand1 is positive
+0c82:else swap summands
+0c88:done when [PC] points to the 1st summand [01c0]
+0c89:else copy 2nd summand [01d0] to [01c0]
+0c8b:we are in vertical adressing mode!
+0c8d:restore PC to the source adress
+0c49:reset PC to 01C0
+0c4c:will result in PC=01d0
+0cbc:done, if no carry. Else we went over 9.99999999
+0cbe:shift mantissa digits right
+0cc2:set first mantissa digit to 1
+0cc3:do not change sign digit
+0cca:read first digit of mantissa
+0ccb:check if op2 is zero
+0ccc:read signs of op1 and op2
+0ccd:flip exponent sign of op2 (division requires subtraction of exp2)
+0ccf:done if exponent underflow (result is zero)
+0cd0:prepare buffer "A" and "B"
+0cd2:PC1 is 3 when loop starts
+0cd4:(loop)buffer "A"=op1, buffer"B"=op2
+0cd7:points to currently calculated digit
+0cdd:loop 13 times makes F3=F3+(13*5) = F3+1
+0cde:subtract "bufB" from "bufA"
+0ce0:subtract again, until carry clear
+0ce1:F3 holds number of subtractions-1
+0ce4:divisor/10
+0ce5:when under/overflow, branch to SR
+0ce6:re-initialize F5
+0ce9:branch, if division done
+0cec:next digit
+0cf0:add "bufB" to "bufA"
+0d07:read sign bits of current operand and point to leftmost digit 
+0d08:read leftmost digit and store signs in F4
+0d09:if op1 is zero -> math error
+0d0b:branch, if mantissa positive
+0d0c:point to sign bits
+0d0d:set math error flag but continue (will raise ^ERR03 later...)
+0d0e:force mantissa positive (clear sign bit)
+0d10:read leftmost digit and advance digit pointer
+0d11:branch if not "1" (operand is not a power of 10)
+0d12:read next digit and advance digit pointer
+0d13:branch if not "0" (operand is not a power of 10)
+0d14:repeat until last digit
+0d15:being here means mantissa is 1, then set current operand to zero
+0d16:repeat until sign, exp and leftmost digit are 0. That is sufficient for a zero
+0d17:branch if high exponent was zero
+0d18:store low exponent as second significant digit (log 1E1=1, log 1E2=2, ...)
+0d19:store high exponent as first significant digit (log 1E42=42, ...)
+0d1a:point to low exponent
+0d1b:set low exponent = 1 The result is >= 10, but stored as 1.0 Hence the exp must be 1
+0d1c:now fix the result sign
+0d1d:point to leftmost digit
+0d1e:store low exponent as first significant digit  (log 1E1=1, log 1E2=2, ...)
+0d1f:point to sign bits
+0d20:branch if exponent was positive
+0d21:make mantissa negative
+0d22:save PC
+0d23:load address 06E0
+0d24:save it in AUX1 and restore PC
+0d28:point to leftmost digit
+0d29:save the digits to another buffer
+0d2a:set result (op1 "bufC") to zero
+0d2b:switch to "bufA"
+0d2c:clear sign bits and point to low exponent
+0d2d:init F6=1 (shift destination)
+0d2e:init F5=2 (shift distance)
+0d2f:moving digits left yields a 16 digit number, starting with "0."
+0d30:init F5=0 (index to constant table)
+0d31:increment table index F5
+0d32:end loop when at end of table
+0d33:copy constant from table to operand buffer 2 "bufD"
+0d34:point to last digit of result buffer
+0d36:bufC += bufD | repeat add/subtract, until next multiply gives over/underflow
+0d37:-------
+0d38:point to overflow digit
+0d39:read overflow digit
+0d3a:branch if odd table index (negative constant)
+0d3b:repeat until overflow
+0d3c:continue with next constant from table
+0d3d:repeat until underflow
+0d3e:continue with next constant from table
+0d3f:table done, switch to result buffer
+0d40:OR low and high exponent digits
+0d41:------
+0d42:branch, if original exponent=0
+0d43:branch, if original exponent positive
+0d44:here, original exponent is negative. So set new mantissa sign negative and exponent sign positive
+0d46:decrement original exponent
+0d48:branch, if exponent still >=10
+0d49:branch, if exponent still >=1
+0d4a:here, exponent is zero. So set new mantissa and exponent sign negative
+0d4c:set new mantissa sign positive and exponent sign negative
+0d4d:since the calculated logarithm is negative, we must subtract it from 1 to make it positive (see graph)
+0d4e:point to result sign bits
+0d50:branch if position is < 4
+0d6a:write the new high exponent
+0d6b:write the new low exponent
+0d6c:write the new signs
+0d6e:code for arguments with "exp>0" or "x>1"
+0d6f:since the calculated logarithm is negative, we must subtract it from 1 to make it positive (see graph)
+0d70:branch if high exp > 0 (exp has 2 digits)
+0d74:point to first digit
+0d79:point to first digit
+0d7a:write high exponent to digit pointed to and point to 2nd digit
+0d7e:point PC to constant 1/ln10
+#not common: 0df6..0dfb
+0e00:switch to "bufA"
+0e01:F3 is the inverted table counter value (counts from F to 0)
+0e02:branch if odd table index
+0e04:(code for the even table indexes) point to next digit from the right
+0e05:read digit and increment pointer by the counter value (wraps around)
+0e06:read other digit and store digit from above to F4
+0e07:add both digits with carry, write to last digit position and decrement pointer
+0e08:decrement the reverse counter
+0e09:repeat until all digits done
+0e0a:read digit (loops over all digits from right to left)
+0e0b:propagate carry, write digit back
+0e0c:until done
+0e24:preset return code for "nothing modified"
+0e25:F0=signs F1F2=exp
+0e26:branch if neg exp
+0e27:branch if high-exp is 0
+0e28:high-exp is 1 or greater. If it's not 1, then done
+0e29:branch if low-exp is 0 or 1
+0e2a:exp is >=12, there are no decimal places. INT not neccessary
+0e2c:exp is negative, i.e. arg is (-1..1)
+0e2e:mantissa is positive->done
+0e30:set first mantissa digit to 1
+0e32:set mantissa sign to negative
+0e33:F3=0 indicates modified operand
+0e3c:flag modified operand
+0e3d:loop until all fraction digits set to 0
+0e3e:not modified? -> Done
+0e3f:modified but positive mantissa? -> Done
+0e40:increase the mantissa by 1. This makes INT(-5.5) to result -6
+0e44:point to first significant digit
+0e45:read first significant digit
+0e46:done, if first mantissa digit is 0 (true only for zero) SQR(0)=0
+0e47:this also sets AUX1 to point to constant ln(10)
+0e48:done if math error flag, e.g. for negative operand
+0e49:set pointer to op2
+0e4a:set op2=0
+0e4b:point to first significant digit of op2
+0e4c:write a 5
+0e4d:point to low exponent digit
+0e4e:write a 1 and decrement pointer to sign location
+0e4f:set bit for negative exponent. Now we have 5E-01 here or 0.5
+0e50:point to result buffer
+0e52:cut off two digits because of the inaccuracy of the logarithmic transformation
+0e53:copy result into result buffer
+0e5a:is op1 zero ?
+0e5c:flag math error
+0e5e:copy op2 to "bufB"
+0e63:this also sets AUX1 to point to constant ln(10)
+0e64:branch if no 'math' flag
+0e66:clear 'math' flag
+0e67:copy "bufB" to op1
+0e6b:test op2 
+0e6d:branch to math error, when number not an integer
+0e6e:branch, if high-exp is zero
+0e6f:branch, if high-exp is > 1
+0e70:branch if exp is 10..13
+0e71:here, the exp is 14..19
+0e72:branch, if exp is 10..11
+0e73:branch, if exp is 13
+0e7c:flip result sign
+0e7e:here, the exp is >=13
+0e82:start with rightmost digit
+0e83:force last digit = 0 and point to next to last digit
+0e85:decimal add 5. This sets carry if digit was >= 5
+0e86:force next to last digit = 0 and point to 3rd to last digit
+0e87:when next to last digit >=5, increase mantissa
+0e89:when 3rd to last digit is 9, increase mantissa, else done
+0e8d:just clear the mantissa sign ;-)
+0e91:sign digit in F4, first digit of mantissa in CL
+0e92:if operand is zero -> return zero
+0e94:if mantissa positive -> done
+0e95:else make result negative
+0e9b:increment is 01
+0e9e:modify sign digit
+0ea0:read signs of op1 and op2
+0ea1:xor signs of op1 and op2
+0ea2:F5=low exp of op2
+0ea3:F6=high exp of op2
+0ea4:F4=xor'd mantissa signs
+0ea5:make mantissa of op1 positive
+0ea7:if mantissa signs differ, make result(op1) negative
+0ea8:branch, if both exponent signs differ
+0ea9:clear carry and read exp-low
+0eaa:add and write exp-low
+0eab:clear "under/overflow" flag
+0eac:add and write exp-high
+0eae:nearly done, if no carry
+0eaf:read sign digit and set "under/overflow" flag
+0eb0:math error when exp is positive(overflow)
+0eb1:else underflow -> make op1 a clean zero
+0eb3:set carry and read exp-low
+0eb4:subtract and write exp-low
+0eb5:clear "under/overflow" flag
+0eb6:subtract and write exp-high
+0eb8:nearly done, if carry
+0eba:invert exponent sign
+0ec1:if new exponent = 00 then clear exponent sign (no E-00)
+0ec4:point to sign bits of current operand
+0ec5:read sign and point to low exponent
+0ec6:read low exponent, point to high exponent and store sign in F0
+0ec7:read high exponent, point to leftmost digit and store low exp in F1
+0ec8:read leftmost digit and store high exponent in F2
+0efc:point PC to constant 1/360
+0f01:save mantissa sign to KL
+0f02:force mantissa positive
+0f2b:point PC to constant 1.333639299510 E-11
+0f35:save current op1 in 01E0
+0f39:multiply by [AUX1]
+0f3b:restore old op1 from 01E0 into op2
+0f3f:op1=op1 * (2x)^2
+0f43:op2=2x (for arctan)
+0f44:multiply current product by 2x
+0f46:point PC to constant -4.391289412646 E-14
+0f4c:clear mantissa sign(atn always calculated positive)
+0f4d:prepare for testing if op1<=1
+0f4f:test MSD of op1
+0f50:branch if op1=0
+0f51:get signs nibble
+0f52:branch if op1 is negative
+0f54:fetch "x" value of arctan
+0f55:reciprocal
+0f58:store original mantissa sign of atn(op1) in KL
+0f59:and make it negative in order to subtract from pi/2
+0f5b:point PC to constant PI/2
+0f5f:fetch "x" value of arctan
+0f60:2x
+0f61:store 2x in "bufB"
+0f62:(2x)^2
+0f63:setup counter for 14 passes
+0f7d:copy op1 to op2
+0f81:copy op1 to op2
+0f85:point PC to constant 90 (2*atn(1))
+0f9b:this also sets AUX1 to point to constant ln(10)
+0f9c:conversion from log10() to log2()
+0fa5:branch if DEG or GRAD mode
+0fa6:it's RAD mode
+0fae:special handling, if last digit is '9'
+0fc3:apply the stolen mantissa sign to result (atn always calculated positive)
+0fc4:done, if RAD mode
+0fcd:argument is zero? use rnd seed
+0fd0:last rnd() was accidentally >=1? Then use rnd seed
+0fd1:copy last rnd() to op1
+0fd6:copy rnd seed to op1
+0fdd:this also sets AUX1 to point to constant ln(10)
+0fde:conversion from log10() to log2()
+1000:branch if GRAD mode
+1003:point PC to constant 0.9 (grad/deg conversion factor)
+1007:branch if GRAD mode
+100A:point PC to constant 1/0.9 (deg/grad conversion factor)
+100d:point PC to constant 57.29577951308 (rad/deg conversion factor)
+1014:read first digit of mantissa
+1015:returns to 1016
+1016:op2 equals zero ?
+1018:done if exponent underflow (result is zero)
+1019:result sign and exp are already calculated -> save them!
+101b:only both mantissas are relevant now
+101c:this clears op1, which is now used to accumulate the result (15 digit precision)
+101d:preset decade counter
+101e:clear increment of next digit
+1020:point PC to position 01 of result (over-overflow ?)
+1021:read this digit and point to overflow digit
+1022:read next digit and store previous in F4
+1023:overwrite next digit with previous
+1024:until last digit (last previous rotates to pos 0)
+1025:select "bufA"
+1026:point PC to current digit
+1027:select op1 and read current digit of "bufA" (copy of op1)
+1028:clear carry
+1029:F3=current digit plus increment of next digit (aka multiplier)
+102a:store new carry in F6
+102c:branch, if current digit is <=5
+102d:instead of adding more than 5 times, we subtract the diff
+102e:BCD complement the multiplier (10-n)
+102f:increase the multiplier of the next decade by 1 (because we subtracted from 10)
+1032:subtract op2 from op1 digitwise
+104b:decrement multiplier
+104c:subtract overflow digits
+104d:next iteration
+104e:branch if all decades done
+104f:decrement decade counter
+1050:all decades done ?
+1051:read position 02 of result (overflow digit) and set F4=9
+1053:branch, if no overflow digit
+1055:set overflow digit to 9
+1058:branch, if multiplier > 0
+1059:branch, if multiplier = 0 and no carry (ie nothing to do)
+105a:here, multiplier =0 but carry =1. Point PC to high exp
+105c:decrement decade counter
+105d:all decades done ?
+105e:branch, if no carry
+1064:add op2 to op1 digitwise, repeat F3 times (op1+=op2*F3)
+1065:  ! F3 is max 5 (otherwise, subtracting is used)
+1066:  ! hence this loop runs max 30*5 = 150 cy -> 150*1,6µs = 240µs
+1067:  ! so in average 90 cy -> 90*1,6µs = 144µs
+1068:  ! (times for multiplication of one decade)
+1069:  ! For all decades, max 240µs * 13 = 3.12ms
+106a:  ! Or, in total average, 144µs * (14/2) = >>1ms<<
+106c:  ! operation is made without loop within the single digits
+106d:  ! So there is no branch opcode and no checking of loop termination
+106e:  ! this results in maximum performance
+107f:decrement multiplier
+1080:add overflow digits
+1081:next iteration
+1082:all decades done ?
+1083:point PC to leftmost digit
+1084:read leftmost digit and point PC to low exp
+1085:branch, if leftmost digit has value (op1 is normalized)
+1086:read low exp, set F3=0 and point PC to sign bits
+1087:read sign bits, set F4=low exp
+1093:read overflow digit
+1094:done, if no overflow
+109c:ArcSin = Atn( X / Sqr(-X * X + 1))
+109f:ArcCos = Atn(-X / Sqr(-X * X + 1)) + 2 * Atn(1)
+10a1:invert arcsin, then add 2*atn(1) to get arccos
+10a2:branch if RAD mode
+10a3:branch if GRAD mode
+10a4:add 2*45°
+10a7:point PC to constant 100° (2*atn(1))
+10ac:point PC to constant PI/2 (2*atn(1))
+10af:add 2*atn(1) to result
+10b4:test internal last digit(F3)
+10b7:when >=5, then round up
+10c6:print text END PROGRAM
+10ca:print text FREE SPACE=
+115e:from AUX0...
+115f:... restore AUX3
+1162:save AUX3...
+1163:... in AUX0
+1170:push new operator
+1171:clear math error flag
+1172:clear repeat flag
+117f:peek next type on operator stack
+1181:branch, if 32bit value on stack
+1183:branch, if type 0xFD on stack
+1185:exit if not TRACEing
+1186:branch to hex trace header 
+1187:copy string length
+1189:PC=address of string
+118a:print source string in TRACE mode
+118e:copy size of target variable(bytes)
+1190:pop address of target variable
+1191:pointer to target variable
+1192:pointer to source string
+1193:copy source length to counter(nibbles)
+1198:if end of this target variable, try to pop next target
+1199:read byte from source string, swap src and target pointer
+119a:decrement source length counter
+119c:branch, if not at end of source string
+119e:  else peek next type from top of stack
+119f:if type "F", get next target variable from stack
+11a0:keep source length to zero (source string done)
+11a2:pad target string with 0x20
+11a4:adjust and swap pointers
+11a5:process next byte
+11a6:branch, if source is HEX( encoded
+11a7:copy lower nibble
+11a8:copy upper nibble, adjust and swap pointers
+11a9:process next byte
+11ab:first hex char
+11ae:second hex char
+11b8:save trace mode in PC+1 and clear trace mode
+11bc:restore saved trace mode from PC+1
+11cc:modifier OFF found->turn TRACE off
+11cd:turn TRACE on
+11d2:"V"?
+11d3:clear common variables
+11d5:clear non-common variables
+11d6:new value for pointer to next free symbol table entry
+11d8:if not <CR> then ^ERR11
+11dc:"N"?
+11de:"P"?
+11e1:<CR>reached,branch to init
+11eb:repeat once
+11ec:use char in KHKL
+11f7:print text HEX(
+11f9:op1 equals zero?
+11fb:make op2 also zero
+1206:reset "execution" mode
+1208:save PC
+1209:save ST1 in KL
+120a:switch to RAM adressing
+121d:after LF delay <pause> times
+1221:loop 1/6 secs
+1225:skip reading next char from ram
+1234:test if 0xFF follows
+1235:branch if there is no line number. Pick line number from input (new pgm line)
+1236:get current program pointer
+1237:pick line number
+1238:adjust current program pointer
+1239:result is "OK"
+123b:store begin of line buffer in AUX8
+123c:init digit counter
+123d:init result
+123f:branch to end loop, if no (more) digit found
+1240:save source text pointer in AUX0 (postion after current digit)
+1241:shift result left
+1244:shift in new digit
+1245:decrement digit counter
+1246:collect up to 4 digits into F3210
+1247:store statement number
+1248:get source text pointer after last stmt number position
+1249:  and copy to F3F2F1F0
+124a:PC=start of IO buffer
+124b:calculate AUX7-AUX0
+124c:hold result in F3210 (bytes to move)
+124d:PC=start of IO buffer
+1250:AUX0=AUX7+4,PC=AUX7
+1251:move block downwards
+1255:decrement move counter by one char
+1259:write 0xFF to[AUX8](marks begin of 16bit stmt number)
+125c:advance AUX8 by 1 byte
+125d:get converted 16bit stmt number
+125e:  and copy for F3F2F1F0
+125f:point PC behind newly "FF" marker
+1260:  and copy 16bit stmt number there to receive an FFnnnn entry
+1261:point stmt pointer to behind stmt number
+1262:point PC to behind stmt number
+1263:
+1268:just SR if digit collection did not start yet
+1269:otherwise,accept digits colleted so far
+1282:branch, if token "PRINT"
+1284:branch, if token "INPUT"
+1286:branch, if token "LIST"
+128b:branch to command code
+12a0:make SELECT CO effective
+12bc:pick 3 address digits
+12c1:write to ram
+12df:store device type in F1
+12e3:prepare new device address
+12e5:  and fire address strobe
+12e7:set line length ?
+12e8:read line length
+12e9:  and copy into AUX9
+12ed:set new current device type (F1)
+12f4:branch to SR, if character >= HEX(10)
+12f6: decrement horizontal printer position
+12f9: decrement horizontal printer position
+#not common: 1304..13ff
+140d:if device type not cassette tape, branch to disk code
+140e:save program in protected mode ?
+1411:set mode protected-save-to-disk 
+1414:set mode save-to-disk 
+142c:test if token "STR("
+1430:test if token "HEX("
+1433:F5=2 flags lowercase
+1434:single quote makes a lowercase string
+1437:F5=0 flags unchanged case
+1438:store begin of literal string in AUX0
+143a:nothing found so far, look for variable name
+143b:read literal string
+143c:error, if requested type >=4
+143e:clear string length counter
+1444:branch, if character is 0x2_ and we have lowercase conversion
+1445:branch, if character is comma
+1448:when quoted string is closed and string length is still zero, that's an error
+144d:increment string length counter
+144c:accept comma, if we're still in quoted string. Else branch to end-of-quoted-string
+1450:if not CR, continue loop
+1452:CR inside the quoted string is an error. Else it is the end-of-quoted-string
+1453:when CR or comma->source code pointer back one character
+1455:get begin of literal string
+1456:  and push on stack
+1457:get length of literal string
+1458:  and push on stack
+145a:push operator 0xFC on operator stack
+145f:if type >=4, then read literal UNQUOTED string
+1460:if type  =4, then error condition (how can this ever be true??)
+1462:done, if not a letter (we didn't recognize anything)
+1466:if no '$' sign, then reset the source code pointer to begin of string and return
+1469:marks a scalar alpha variable
+146c:marks an array alpha variable
+146d:copy variable numeric digit and variable type ...
+146f:... to ram0002
+1470:branch, if scalar alpha variable
+1471:else get first array index as expression
+1478:copy array index to F3F2
+1483:branch, if variable exists
+1484:default length 16 for new alpha variable (always scalar!)
+1487:auto-declare this scalar alpha variable
+1489:looks like we're reading the length of the alpha variable
+148a:AUX0=address of array sizes?
+148b:are we pushing the start address of the alpha variable's value?
+148c:copy the length(?) to F3F2
+148f:PC=address of array sizes?
+1491:convert string size to nibble size
+1493:add nibble size to current PC (set PC to end of string)
+1497:until byte counter is 1
+1499:read byte and decrement string pointer
+149b:branch, if not a SPACE character
+149e:decrement byte counter
+14a1:push string length(F3F2) and max storage length(F1F0)
+14a2:push operator 0x38 on operator stack
+14a5:push operator 0xE0 on operator stack
+14a8:single quote inside single quoted string is end-of-string
+14a9:continue quoted string loop
+14ac:branch to cassette tape handler
+14ad:  else disk handler(7)
+14af:get IB5 state in KH, kill 11usec
+14b0:branch if tape detected
+14b2:branch if begin of tape detected, else...
+14b3:set "no tape detected" error
+14b5:wait additional 97msec after begin of tape detected
+14ba:initialize loop counter for 66 sync bits
+14be:flip DIL0 if it's a header block, else flip DIL1 (allow search for header block using timing block)
+14bc:prepare tape write operation
+14bf:fire OBS (write command to tape controller)
+14c0:kill 3*1,6µsec = 4,8µsec
+14c3:increment loop counter
+14c7:write same record TWICE ??
+14c9:get IB5 state in KH, kill 11usec
+14ca:branch if end-of-tape (clear leader) detected
+14cb:tape motion off, but keep write current on
+14cc:effectively sends a 0xFF->tape idle, write current off
+14ce:initialize bit counter to 1
+14cf:get start address of IO buffer
+14d0:read next nibble from IO buffer
+14d2:branch if current bit is a "1"
+14d3:burn one machine cycle to keep same timing for "0" and "1"
+14d4:flip DIL0 if current bit is "0"
+14d5:fire OBS to write to controller
+14d7:increment bit counter
+14d9:branch if nibble done (this tests the PC from before the increment, eg 1 for the first loop)
+14da:shift left nibble-to-write
+14db:burn three machine cycles
+14dd:flip DIL1 if current bit is "1"
+14df:save PC3
+14e1:loop until bit counter reached 0x800 = 2048bits => 256byte
+14e6:get status of LOP in KH and kill 11usec
+14e9:set protected tape error and cancel tape operation
+#not common: 14f8..14ff
+1505:test if comma
+1507:test if semicolon
+150a:test if colon (next command)
+150c:if not CR, then we have a print element
+1517:done if colon
+151a:done if CR
+151d:test on token TAB(
+151e:branch if TAB( found
+1533:we're going to print the item on the VS stack
+1534:read next operator
+153a:branch to print number if not FC FE E0
+153f:adjust VS pointer because we popped 16 nibbles
+1546:get desired horizontal position
+154b:done if exp or mantissa negative
+154c:done if leading digit is 0 (number is 0)
+1550:get current horizontal position
+1552:complement of desired F1 position in F2
+1553:F2=PC2-F2-1
+1554:branch, if current PC2 position <> desired F1 position
+1555:complement of desired F0 position in F2
+1556:F2=PC1-F2-1
+1557:branch, if current PC2 position = desired F0 position
+1558:if carry set, then we are already beyond the desired position and done
+156d:pop operator and ignore it
+156e:get string length
+1571:get string address
+1573:branch if HEX type
+1574:length is in F1F0, address in PC
+1577:get current horizontal position
+1578:done, if mod(position,16)=0
+15a2:print text SYSTEM ERROR
+15a7:branch, if end of line not reached
+15a8:reset offset within active program line
+15b6:branch to error, if even not a colon found
+15ba:test HALT/STEP key
+15be:increment sub-statement counter
+15c0:  and write back to ram
+15c6:PC1=0 is "line not found"
+15e2:check status of IB9 (SF key)
+15fb:test HALT/STEP key
+1601:branch if no modifier
+1604:DATASAVE DA/DC/BA/BT
+160a:PC points to current-device-type byte
+160d:if cassette device, branch to cassette tape handler
+160e:flag this as a datasave operation
+1610:test on token "OPEN"
+1681:is end-of-program reached? 
+1684:issue_^ERR48_undefined_special_function_key
+16a0:get variable letter
+16a2:save current program pointer into AUX14
+16a3:store variable letter in F3F2
+16a5:get variable digit
+16a6:default 0xF
+16a8:store variable digit in F1
+16aa:store variable letter and digit in AUX1
+16ac:store num/alpha bit in F7 (used below)
+16af:restore program pointer from AUX14
+16b0:and reset AUX4 to that position (do not accept these characters)
+16b3:branch, if not an array designator (do not accept characters read so far)
+16b4:parse-mode(=0)?  might be a BUG, because ST2-0 is also checked !!??
+16b5:lookup symbol
+16b6:branch, if it exists
+16b9:let PC point to address of first array dimension
+16ba:get both dimensions in F3210
+16bb:let AUX14 keep the address of length byte
+16bc:compute number of array elements...
+16be:...and store in AUX14, PC points to length byte
+16bf:set length of numeric variable to 16 nibbles
+16c1:branch, if numeric variable
+16c2:read length byte
+16c3:skip PC over length byte
+16c4:copy length in F5F3
+16c8:use timing pattern for header block (DIL0)
+16ca:use timing pattern for non-header block (DIL1)
+16e5:test on token "END"
+16e6:branch to regular IF handling
+16e8:copy ST4-2 (end-of-data flag) to F0
+16ee:move condition result to KL
+16f0:test on token "THEN"
+16f2:ORIGCODE=SB 10F3 (pick_line_number_and_test_if_exists)
+16f5:condition NOT met->continue to next statement
+1700:save PC (pointer to program text area(?))
+1702:probably was "ORI,R 0x0,0," before
+1703:branch if device type is 1 (start new LOAD, otherwise continue reading from old record)
+1704:restore PC
+1706:read next byte from record
+1707:branch if it is not a trailer byte
+1708:branch if end-of-block, start reading next record
+1709:branch if illegal trailer byte
+170b:copy byte from IObuffer to program text area(?)
+170d:repeat until carriage return found (program line always fits in one record, no overlap)
+1713:process this program line (calls 1700 afterwards)
+1715:get device address
+1716:copy it to K register
+1718:fire address strobe (select card)
+171b:branch to 1722 if F3=1xxx or F3=0x0x, else tape error
+171c:prepare ^ERR34_tape_read_error
+1720:force active device type to console
+1722:branch if not end of tape
+1723:prepare ^ERR49_end_of_tape
+172a:save control byte upper to F0
+172b:branch if device type is 1
+172e:read next record, if this is not a program header
+172f:read next record, if this is not a program header
+1731:read next record, if file name does not match
+1733:change current device type to 0xF (cassette tape after program header read)
+1734:control byte bit 0 indicates a record of a protected program
+1735:set protected program flag
+173b:colon follows.there is code behind GOSUB. we must store this point a return address
+173d:get the address of NEXT basic line
+173e:skip the FF marker
+173f:push address of current basic line
+1740:adjust to adress of first command minus 1
+1745:push address of current basic line
+1748:push address of statement after the GOSUB
+1746:adjust address by minus 1
+174a:test on token "RE"
+174f:test on token "SAVE"
+1754:test on token "LOAD"
+1757:ORIGCODE=ORI 0x0,ST2,F0
+1763:branch, if array variable
+1764:copy string length (in characters) to F1F0
+1766:double length (2 nibbles per character)
+1768:copy storage size to F1F0
+176b:again copy storage size to F1F0
+176d:clear upper counter registers
+176f:constant byte is the blank character
+1771:PC=current start address of symbol table
+1774:PC=calculated address where the symbol value is stored
+1775:write length byte
+1776:and adjust AUX5
+1777:get symbol digit and type in F1F0
+1778:branch, if type is array 
+177c:get array dimensions
+177d:calculate number of array elements
+177f:PC=0008
+1780:get string length from ram0008
+1781:...and store in F5F4
+1783:cumulate number of array elements in F3210
+1784:more than address size ?
+1785:decrement string length counter F5F4
+1787:repeat for every character
+1789:double length (2 nibbles per character)
+178b:copy storage size to F3210
+178c:...and to AUX1
+178a:branch to error, if overflow
+178e:restore storage size from AUX1...
+178f:...into F3210
+1792:PC points to current position in IO Buffer
+1793:write end-of-block byte
+1797:write 0x0 as control byte
+1799:write 0x1 as control byte if protected program
+179a:adjust IObuffer pointer
+179b:increment IObuffer byte counter
+17a3:branch if type alphanum
+17a4:deref address of arrary element
+17a5:replace address by value on stack
+17a6:remove var ptr operator
+17a7:no deref for alphanum variable
+17b9:handle LOAD DA/DC commands for disk devices
+17bc:these checks are only for parse mode
+17c6:copy device type to ram004d
+17c7:skip filename for teletype (tape punch unit)
+17c8:branch, if other than cassette tape device (LOAD from disk?)
+17cc:temporarily set "execution" mode to "1"
+17cd:this ends the 'SR verb_load'. The real loading is done is 'console input' ??
+17ce:set "execution" mode to "0"
+17cf:CR must follow
+17d2:set "run" mode to "not running" ??
+17d4:again, the real loading is done in 'console input' ?
+17d8:force current device type to console
+17da:get current execution mode
+17db:branch if program runs
+17e2:if no line number given in LOAD command, start from beginning
+17e3:else start from given line number
+17e5:get pointer to IO buffer
+17e6:advance 1 byte
+17e7:load PC
+17e9:initialize IObuffer byte counter to 3 (?)
+17ed:read 3a34 from rom(2200B)
+17ee:return status of IB5 in KH and delay 11µsec
+17ef:branch if LOP active (clear leader has passed)
+17f0:   else try again
+17f1:loop (40µsec) runs 50k or 52k times -> ~ 2sec delay
+1801:fill 16 nibbles with F
+1808:if no double quote->exit
+1831:test on '#'
+1835:KHKL receive device address
+1837:^ERR47 when device not exists in table
+183b:write device address of file table device in ram008A
+183f:test on '/'
+1840:branch if neither '#' nor '/'
+1842:^ERR47 when not a hex digit
+1845:set current device type to F5
+1847:^ERR47 when not a hex digit
+184a:^ERR47 when not a hex digit
+184d:fire address strobe
+1862:branch to cassette tape handler
+1866:clear retry counter (AUX14[PC1])
+186f:loop constant for 3.5 msec
+1872:test IBS
+1869:was SB 188B. Now, additionally checks clear leader and SR in that case
+186b:branch if record not complete (->try 2nd copy)
+186c:branch if extra bit received (->try 2nd copy)
+1879:was SB 188B. Now, additionally checks clear leader and SR in that case
+187b:branch if record not complete (->retry whole record pair)
+187c:branch if no extra bit received (->record successfully read)
+187d:set cassette tape device idle
+187f:increment retry counter
+1880:branch if less than 4 retries
+1881:set read-error flag
+1883:backward search sync leader
+1886:returns to 188B  ORIGCODE=BNE 0x0,F0  >25
+188b:PC=IO buffer
+1890:error no tape
+1892:clear receiving register
+1893:clear bit counter
+1894:was TP AUX11 (?)
+1897:preload PC for loop 53*11cy=583µs (~3,5 bits on tape)
+1898:clear IBS
+189a:test IBS
+189b:branch if both tracks have a flux change->illegal
+189c:branch if no   track  has  a flux change->illegal
+189d:shift left receiving register
+189e:branch if no flux change on DIL0 (zero's track)
+189f:hence we have a flux change on DIL1->shift 1 into receiving register
+18a0:get bit counter
+18a2:branch if less than 0x800 = 2048 bits received
+18a3:branch when skipping rest of block (had error before)
+18a4:increment bit counter
+18a5: ???
+18a6:branch if nibble is complete
+18a8:get address of next nibble in IObuffer
+18a9:write received nibble and increase address
+18af:add_0x0c30_
+18b4:force bit loop to run forever. this will ignore rest of record
+18b5:ends when no more IBS received for ~440usec (after current record)
+18c6:prepare colon for output
+18c8:read intra-line execution position information
+18c9:copy MSN to F4
+18cb:branch if F4F2 = 0 (all sub-statements done)
+18cd:if CR found, then the sub-statement counter was wrong!
+18ce:print colon
+18d0:decrement sub-statement counter
+18d3:start list line from this position (AUX4)
+18d5:ORIGCODE=B 0105 (start_execution_from_line_F3210)
+18d9:BACKSPACE
+18da:branch to cassette tape handler
+18dd:test on token "BEG"
+#not common:18fd..18ff
+1902:branch to cassette tape handler
+1933:SKIP statement
+1934:branch to cassette tape handler
+1935:execute skip for disk (results in illegal-statement-error)
+1938:test on token END (SKIP END reads until end of current data file, then positions before trailer record)
+193c:branch if not data record
+193d:if data record, but not the trailer -> read next
+193e:go back one record
+1942:copy "F" status to F5
+1944:decrement skip counter
+1948:branch if skipping logical records
+1949:continue reading until trailer record found
+194a:skip next file
+194b:branch if this was a program record (go one record backwards)
+194c:branch if this was a data trailer record (go one record backwards)
+194d:branch if this was a data header record (read next record)
+194e:branch if this was not the last phys.record of the logical record (read next record)
+194f:skip of one logical record complete. start loop for the next n records
+
+#not_common:1950..196b (was DRAM code in 2200B)
+196f:get stack pointer
+1971:error, if exp or mantissa negative
+1972:error, if high exp not null
+1973:error, if leading digit is 0 (number is 0)
+1974:low exp is 0, no digit shift needed
+1975:save low exp to F4
+1979:position_PC_to_leading digit
+197a:and read it
+197b:PC before leading digit
+197d:done, if low exp = 1
+1980:error, if low exp > 2
+1983:adjust stack pointer, make pop effective
+1988:save first nibble of file name to F2
+198a:copy next nibble to F1
+198c:do not compare if F2=0xF (any name will fit)
+198d:branch if no match
+198f:loop thru all 16 nibbles (8 characters)
+1990:return with found condition (KL=0)
+1991:return with not found condition (KL=1)
+1993:test src on modifier "BT"
+1995:F6=8 means modifier "BT"
+1997:test src on modifier "BA"
+1999:F6=4 means modifier "BA"
+199b:test src on modifier "DA", absolute adress mode
+199d:F6=2 means modifier "DA"
+199f:test src on modifier "DC", disk catalog mode
+19a1:F6=1 means modifier "DC"
+19ad:wait until IB5 goes low (driven by clear leader sensor)
+19af:send hex(1f)
+19b2:get end of user test area
+19b3:let AUX12 point to IO buffer
+19b8:0xEF puts the cassette drive in forward mode:head in, forward read, motor on
+19bd:wait for I/O ready
+19bf:example C->02F0
+#not common:19df..19fa
+1a02:just skip all format elements until CR
+1a3c:copy pointer to image statement...
+1a3d:...to AUX13
+1a42:not an '#' ?
+1a52:mark format specifier as 'with exp'
+1a54:must be '^' else ^ERR38
+1a56:must be '^' else ^ERR38
+1a58:must be '^' else ^ERR38
+1a5b:skip all '#' characters
+1a5c:branch to '^' handler
+1a63:indicate '#' found
+1a66:indicate ',' found
+1a69:indicate '.' found
+1a6c:indicate '+' found
+1a6f:indicate '-' found
+1a72:indicate '$' found
+1a77:indicate '^' found
+1a79:indicate nothing found
+#not common:1af7..1aff
+1b09:fetch linenumber to PC
+1b0a:save AUX4 in PC, AUX4 points to assumed image token
+1b0b:save PC(current text pointer) to AUX11
+1b0e:test if referenced linenumber has image statement
+1b11:fetch pointer to image statement...
+1b12:...to AUX12
+1b13:restore my text pointer...
+1b14:...to AUX4
+1b1b:done with argument list, end printusing
+1b25:read next format specifier
+1b27:branch to ^ERR36
+1b31:result of current expression in arg list
+1b89:ORIGCODE=BT 0x1,F5  >31
+1c02:"for" operator is 0x20
+1c09:get stack pointer
+1c0a:read from [stack pointer]
+1c0b:save this value in 003c
+1c0f:get loop start value
+1c12:keyword "TO" must follow
+1c17:get loop end value
+1c19:keyword "STEP" may follow
+1c1d:get loop increment value
+1c39:got a FOR element from stack?
+1cd6:PC1=0 is "line not found"
+1d03:_restore_without_argument
+1d16:PC1=0 is "line not found"
+1d37:ERR28_data_reference_beyond_limits
+1d3d:ERR09_illegal_fn_usage
+1d68:copy linenumber to PC
+1d69:branch if starting line number given
+1d6a:default starting line number
+1d6b:starting line number in AUX11
+1d70:copy new line number to PC
+1d71:new line number in AUX12
+1d72:default increment is 10
+1d76:collect 1 or 2 digits for increment
+1d7f:branch to error, if increment 0 given
+1d80:new line number given?
+1d82:copy increment to PC
+1d84:and to AUX12
+1d89:PC=starting line number
+1d8c:store text pointer to starting line
+1d8d:F3210=line number from program text
+1d8e:PC=new line number
+1d8f:compare with new line number
+1d95:PC1=0 is "line not found"
+1d9a:PC1=0 is "line not found"
+1d9d:find line reference in current line
+1d9e:none more found->next line
+1da0:PC=referenced line number (e.g. GOTO xx)
+1da1:AUX8=referenced line number
+1da2:F3210=referenced line number
+1da3:PC=starting line number
+1db5:PC1=0 is "line not found"
+1dc3:PC1=0 is "line not found"
+1dd1:PC=starting line number
+1dd2:if no starting line number given, start from beginning
+1dd5:save F7 in KH
+1dd9:restore F7 from KH
+1ddb:PC=starting line number
+1ddc:store in AUX1
+1de0:PC1=0 is "line not found"
+1def:F3210=AUX5-4
+1df2:write that to ram0072(start of variables)
+1df7:AUX6=0140(operator stack)
+1dfe:ram0080=0200(dummyVariableTable)
+1e15:PC=008C
+#not common:1e26..1e28
+1e2e:write 2 to[0088]
+1e3a:token STR(
+1e3e:0^0 is undefined -> math error
+1e3f:read signs
+1e40:0^(-y) <=> 1 / (0^y) is undefined -> math error
+1e41:flag math error
+1e43:select RAM adress mode
+1e44:save PC in AUX8
+1e45:save F3210...
+1e46:...in AUX15
+1e48:read from ram0088
+1e49:branch if ram0088 bit0 = 0
+1e4a:PC=00AA
+1e4c:restore from AUX15...
+1e4d:...to F3210
+1e4e:restore PC from AUX8
+1e4f:restore ST1 from F3
+1e5d:branch if token 0xC3 COS(
+1e5e:if neither SINCOSTAN, then operator code 0x00
+1e6c:branch, if device type is 4 (teletype=tape punch unit)
+1e85:ORIGCODE=SB 188B (read_2048_bits_from_cassette_tape(->PC1))
+1e97:handle end-of-tape in calling routine
+#not common:1ec6..1ecb
+1ecc:PC=008E
+1f24:preload PC for loop 11250*11cy=200msec
+1f25:clear IBS
+1f27:test IBS
+1f28:branch if bit received
+1f2c:branch if tape detected
+1f2d:branch to no-tape or end-of-tape error
+1f3f:if exp negative, do nothing
+1f40:else set LSD to 0 (rounding?)
+
+
+1f47:branch, if other than console device is active
+#not common:1f55..1f56
+1f68:just skip over the DEFFN statement in execution mode
+1f6b:done, if CR or colon
+1f71:skip over quoted string
+1f75:branch if not token REM
+1f78:branch if token DEFFN
+1f7a:branch if not token GOSUB
+1f7b:for DEFFN or GOSUB just eat next character. Should eliminate the ' . What if GOSUB<linenumber> ??
+1f7c:test if ' follows
+1f7e:' found. skip until closing '
+1f82:test if " follows
+1f84:" found. skip until closing "
+1f87:colon found. exit with F0=1
+1f8a:CR found. exit with F0=0
+1f91:line number found. skip over it
+1fcb:branch to operator type 11 handler
+1fcc:  same handler for operator type 12
+1fce:save operator type low nibble (1 or 2)
+1fd0:pop calling GOSUB line number
+1fd2:pop calling GOSUB offset in line
+1fd4:do this for operator type 12 (SF Key in input mode)
+1fd7:branch if operator type 12
+1fd8:when called by SF key from immediate mode, return control to console
+1fdc:get status of "input mode"
+1fdd:force "input mode" off
+1fde:set operator type to 11 (SF Key while in immediate mode)
+1fdf:set operator type to 12 (SF Key while in input mode)
+#not common from 1fea to end
+#
+# TO BE DONE: check the following addresses if they are is non-common area
+0130:parse-mode(=0)?
+0136:math error? 
+0328:parse-mode(=0)? 
+04ef:parse-mode(=0)? 
+0553:parse-mode(=0)? 
+055a:parse-mode(=0)? 
+0564:parse-mode(=0)? 
+0571:parse-mode(=0)? 
+0581:parse-mode(=0)? 
+05d4:parse-mode(=0)? 
+0641:parse-mode(=0)? 
+064a:parse-mode(=0)? 
+0670:parse-mode(=0)? 
+0680:parse-mode(=0)? 
+068d:parse-mode(=0)? 
+06b3:parse-mode(=0)? 
+06bb:parse-mode(=0)? 
+0724:parse-mode(=0)? 
+0767:parse-mode(=0)? 
+077b:parse-mode(=0)? 
+077f:parse-mode(=0)? 
+07a2:parse-mode(=0)? 
+07c0:parse-mode(=0)? 
+07c9:parse-mode(=0)? 
+0806:parse-mode(=0)? 
+0810:parse-mode(=0)? 
+0816:parse-mode(=0)? 
+0823:parse-mode(=0)? 
+085d:parse-mode(=0)? 
+0888:parse-mode(=0)? 
+088e:parse-mode(=0)? 
+08ee:parse-mode(=0)? 
+0a3f:parse-mode(=0)? 
+0aa9:parse-mode(=0)? 
+0abb:parse-mode(=0)? 
+0b77:parse-mode(=0)? 
+0b80:parse-mode(=0)? 
+0b8a:parse-mode(=0)? 
+0b9b:parse-mode(=0)? 
+0b9e:parse-mode(=0)? 
+0bde:parse-mode(=0)? 
+0c0d:parse-mode(=0)? 
+0fbd:parse-mode(=0)? 
+10c1:parse-mode(=0)? 
+115a:math error? 
+1174:parse-mode(=0)? 
+11ca:parse-mode(=0)?
+1279:parse-mode(=0)? 
+1292:parse-mode(=0)? 
+129f:parse-mode(=0)? 
+12bf:parse-mode(=0)? 
+12ca:parse-mode(=0)? 
+13a5:parse-mode(=0)? 
+13d1:parse-mode(=0)? 
+13e9:parse-mode(=0)? 
+1454:parse-mode(=0)? 
+1475:parse-mode(=0)? 
+147d:parse-mode(=0)? 
+1488:parse-mode(=0)? 
+150d:parse-mode(=0)? 
+1512:parse-mode(=0)? 
+1525:parse-mode(=0)? 
+1547:parse-mode(=0)? 
+157e:parse-mode(=0)? 
+1592:parse-mode(=0)? 
+15a4:parse-mode(=0)? 
+15ad:parse-mode(=0)? 
+15b7:parse-mode(=0)? 
+15f9:parse-mode(=0)? 
+160c:parse-mode(=0)? 
+1613:parse-mode(=0)? 
+1620:parse-mode(=0)? 
+1635:parse-mode(=0)? 
+1638:parse-mode(=0)? 
+163f:parse-mode(=0)? 
+165f:parse-mode(=0)? 
+16b8:parse-mode(=0)? 
+16e7:parse-mode(=0)? 
+16f3:parse-mode(=0)? 
+17bb:parse-mode(=0)? 
+181b:parse-mode(=0)? 
+1834:parse-mode(=0)? 
+1839:parse-mode(=0)? 
+1843:parse-mode(=0)? 
+184c:parse-mode(=0)? 
+1850:parse-mode(=0)? 
+18d7:parse-mode(=0)? 
+18e0:parse-mode(=0)? 
+18f9:parse-mode(=0)? 
+1913:parse-mode(=0)? 
+1931:parse-mode(=0)? 
+193a:parse-mode(=0)? 
+1941:parse-mode(=0)? 
+1954:parse-mode(=0)? 
+19a6:parse-mode(=0)? 
+1a25:parse-mode(=0)? 
+1ad6:parse-mode(=0)? 
+1b1d:parse-mode(=0)? 
+1b30:parse-mode(=0)? 
+1bca:parse-mode(=0)? 
+1be1:parse-mode(=0)? 
+1be7:parse-mode(=0)? 
+1c00:parse-mode(=0)? 
+1c08:parse-mode(=0)? 
+1c1e:parse-mode(=0)? 
+1c23:parse-mode(=0)? 
+1c33:parse-mode(=0)? 
+1c55:parse-mode(=0)? 
+1c80:parse-mode(=0)? 
+1c95:parse-mode(=0)? 
+1ccc:parse-mode(=0)? 
+1d04:parse-mode(=0)? 
+1d0b:parse-mode(=0)? 
+1e00:parse-mode(=0)? 
+1e0e:parse-mode(=0)? 
+1e30:parse-mode(=0)? 
+1e59:parse-mode(=0)? 
+1f38:parse-mode(=0)? 
+
+0152:0=run mode, 1=immediate mode
+04c4:0=run mode, 1=immediate mode
+06af:0=run mode, 1=immediate mode
+071a:0=run mode, 1=immediate mode
+0780:0=run mode, 1=immediate mode
+087d:0=run mode, 1=immediate mode
+0890:0=run mode, 1=immediate mode
+10f0:0=run mode, 1=immediate mode
+1500:0=run mode, 1=immediate mode
+15ac:0=run mode, 1=immediate mode
+15b8:0=run mode, 1=immediate mode
+17cb:0=run mode, 1=immediate mode
+1e0f:0=run mode, 1=immediate mode
+09cd:clear_status_of_IB9
+1683:clear_status_of_IB9
+17d5:clear_status_of_IB9
+1fda:clear_status_of_IB9
+0103:clear ST4-2 (end-of-data flag)
+0b87:clear ST4-2 (end-of-data flag)
+0b8b:clear ST4-2 (end-of-data flag)
+16e9:clear ST4-2 (end-of-data flag)
+0bf9:set ST4-2 (end-of-data flag)
+004f:test carry
+01dc:test carry
+01df:test carry
+01e0:test carry
+0208:test carry
+0274:test carry
+02af:test carry
+02b7:test carry
+02cc:test carry
+0439:test carry
+05ab:test carry
+05b3:test carry
+0637:test carry
+063a:test carry
+08dd:test carry
+0980:test carry
+0a4e:test carry
+0a57:test carry
+0a5f:test carry
+0a6f:test carry
+0ae0:test carry
+0b4d:test carry
+0c76:test carry
+0c7f:test carry
+0c9d:test carry
+0ca9:test carry
+0cb6:test carry
+0d96:test carry
+0dd8:test carry
+10b5:test carry
+10d0:test carry
+10da:test carry
+10e3:test carry
+1112:test carry
+1258:test carry
+1276:test carry
+1333:test carry
+14c5:test carry
+166a:test carry
+17b0:test carry
+1874:test carry
+188a:test carry
+18ac:test carry
+18b1:test carry
+18e5:test carry
+18eb:test carry
+18f6:test carry
+1946:test carry
+1961:test carry
+196a:test carry
+1a89:test carry
+1a9d:test carry
+1ad1:test carry
+1ae8:test carry
+1ca5:test carry
+1cab:test carry
+1cb3:test carry
+1d21:test carry
+1dcf:test carry
+1f2a:test carry
+0413:set carry
+0423:set carry
+0a42:set carry
+1aa6:set carry
+1ca0:set carry
+0a6c:set carry
+1cae:set carry
+1667:set carry
+0c73:set carry
+0c92:set carry
+0cd9:set carry
+0e0e:set carry
+0e1a:set carry
+0e41:set carry
+0ed9:set carry
+1031:set carry and read
+0da1:set carry and read
+0d92:set carry and read
+0dec:set carry and read
+0e88:set carry and read
+0ebb:set carry and read
+004a:clear carry
+01d3:clear carry
+0203:clear carry
+0218:clear carry
+021b:clear carry
+0270:clear carry
+02ad:clear carry
+02b5:clear carry
+02ca:clear carry
+03b9:clear carry
+0419:clear carry
+0425:clear carry
+042b:clear carry
+0457:clear carry
+0467:clear carry
+05a6:clear carry
+05ae:clear carry
+05ce:clear carry
+0673:clear carry
+06a2:clear carry
+06e4:clear carry
+06ec:clear carry
+0711:clear carry
+0744:clear carry
+078c:clear carry
+0797:clear carry
+07cf:clear carry
+0894:clear carry
+08d3:clear carry
+093b:clear carry
+0955:clear carry
+097c:clear carry
+09d4:clear carry
+0a4c:clear carry
+0a55:clear carry
+0a5c:clear carry
+0ace:clear carry
+0ad6:clear carry
+0ad9:clear carry
+0b4a:clear carry
+0bb7:clear carry
+0be4:clear carry
+0c1a:clear carry
+0c7c:clear carry
+0ca7:clear carry
+0cae:clear carry
+0ce7:clear carry
+0d45:clear carry
+0d51:clear carry
+0db8:clear carry
+0e03:clear carry
+0e1f:clear carry
+0e84:clear carry
+0f72:clear carry
+10b3:clear carry
+10cd:clear carry
+10d1:clear carry
+10dc:clear carry
+110f:clear carry
+1138:clear carry
+1195:clear carry
+11b0:clear carry
+11c3:clear carry
+122e:clear carry
+1254:clear carry
+1273:clear carry
+13f6:clear carry
+143d:clear carry
+1490:clear carry
+149d:clear carry
+14c2:clear carry
+1551:clear carry
+1564:clear carry
+158b:clear carry
+15bd:clear carry
+15d9:clear carry
+1648:clear carry
+1672:clear carry
+1765:clear carry
+17a9:clear carry
+17b1:clear carry
+18cf:clear carry
+18e2:clear carry
+18e8:clear carry
+18f3:clear carry
+1919:clear carry
+1943:clear carry
+195f:clear carry
+1967:clear carry
+1a4a:clear carry
+1a8a:clear carry
+1a8f:clear carry
+1a99:clear carry
+1acd:clear carry
+1ae5:clear carry
+1b3b:clear carry
+1b6b:clear carry
+1b74:clear carry
+1b79:clear carry
+1b8d:clear carry
+1bbc:clear carry
+1c77:clear carry
+1c9b:clear carry
+1ca8:clear carry
+1cbe:clear carry
+1d0f:clear carry
+1d1e:clear carry
+1d4c:clear carry
+1d60:clear carry
+1dc9:clear carry
+1eb4:clear carry
+1f17:clear carry

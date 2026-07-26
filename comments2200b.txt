@@ -1,0 +1,1196 @@
+09ba:send 64 spaces to CO
+09bd:send HEX(0C0C) to CO (line up)
+09c2:decrement line counter
+09cc:no double quote -> run program from deffn' marker
+#
+0b6c: ORIGCODE= ANDI 0x5,ST1,ST1
+#
+0df6:read sign of op2
+0df7:set the "internal last digit" for rounding
+#
+1329:print text ()=
+1342:PC=00A2(device table ci co plot tape disk)
+1346:PC=0BC0(ROMconstant=0001400005400413)
+1348:PC=0BE0(ROMconstant=ff010a0310000000)
+134e:copy CI&CO to INPUT&PRINT
+1351:copy CO to LIST
+1356:wipe 00BC..00C1
+1357:wipe 00C2..00D1
+1358:wipe 00D2..00E1
+1359:wipe 00E2..00F1
+134b:PC=0090(device table input print list)
+1380:just pressed CR?
+1381:then back to console input
+1383:if no line number found, branch to command execution
+1385:look for token type "VERB"
+1388:if_no_verb_found,assume_LET
+1389:jump to the code for that verb. Does not return
+138a:look for token type "CMD"
+138d:jump to the code for that command. Does not return
+138f:make sure, we're in immediate mode
+13a0:look for atom type 5 (fn,pi#,len,val,num,pos)
+13a3:jump to appropriate function code
+13a4:no function type 5 found
+13a9:point to constant #PI
+13aa:loop counter
+13b0:push the number on scratch stack
+13bb:store the function identifier in F7F6
+13c0:is end-of-program reached?
+13ca:restore the function identifier from F7F6
+13cc:matching function identifier?
+13cd:branch if found
+13d4:error found during execution phase results in SYSTEM ERROR
+13d5:push FN operation (0x63 ?)
+13d8:special target type "virtual variable"
+13e4:evaluate argument of the FN function call
+#
+19e2:clear IBS flag
+19e3:wait for IBS=1 (???)
+19e5:ignore HEX 00
+19e7:ignore HEX 7F
+19e9:branch if X-OFF received
+19eb:put received byte in IO buffer
+19ed:adjust IO buffer pointer
+19ef:repeat until HEX 0D received
+19f0:clear IBS flag
+19f1:wait for IBS=1 (???)
+19f6:PC=current IO buffer pointer
+#
+1b89:unpatched code is BT 0x1,F5  >31. Patched version is BT 0x8,F5 >31
+#
+1d5b:in 2200T code, the branch is to 1d4a. What does this change or fix??? BUGFIX
+#
+1ec6:ORIGCODE=SB L1ECF
+#
+1f43:parameter address for 100usec delay
+1fb0:unpatched code is ORI 0xF,0,PC2. Patched version is ORI 0xE,0,PC2
+1fe3:unpatched code is ORI 0xF,0,PC2. Patched version is ORI 0xE,0,PC2
+#
+2004:select plot device
+2006:change to plot mode
+2008:test if angle bracket
+200a:fetch plot expression0(1<replication<1000)
+200f:if neg sign give error
+2013:plot replication is in AUX14
+2015:next char must be left angle bracket
+2019:fetch plot expression1(-1000<delta x<1000)
+201e:delta x in AUX12&15
+2023:fetch plot expression2(-1000<delta y<1000)
+2028:delta y in AUX8
+202d:if right bracket then parameter complete
+202e:when no plot command given, default to Pen'U'p
+2034:flag "we have a plot command"
+2037:adjust parse pointer
+2039:command FE "byte sequence"
+203a:flag "we have a string to plot"
+2043:save F5
+2049:restore F5
+204c:decrement byte counter
+204e:repeat until HEX sequence done
+2051:initiate plotter byte sequence
+2055:save length in F5F4
+2057:get address
+2058:save string address
+2059:restore length to F1F0
+205c:branch, if only 1 byte to print (maybe plotter limit in plot mode)
+205e:branch, if buffer contains HEX sequence
+205f:otherwise, clear type flag
+2060:read next byte from sequence
+2062:and adjust pointer
+2067:decrement byte counter
+206a:repeat until sequence done
+206b:get replication counter
+2071:change to PRINT mode
+2073:next char must be right angle bracket
+2075:comma indicates another plot operation
+2078:change to PLOT mode
+2081:initiate plotter byte sequence
+208b:high nibble of plotter command
+2095:delta x and y both zero -> done with this sequence
+2096:decrement replication counter
+2097:store new replication counter
+2099:Ok, we have delta x<>0. Now get delta y
+209a:branch, if delta x negative
+209f:delta x>0 and delta y=0. Make "X+" command (F9)
+20a1:branch, if delta y positive
+20a2:delta x>0 and delta y<0. Make "X+Y-" command (F2)
+20a7:delta x>0 and delta y>0. Make "X+Y+" command (F4)
+20a9:test delta y
+20ad:delta x<0 and delta y=0. Make "X-" commmand (F8)
+20af:branch, if delta y negative
+20b0:delta x<0 and delta y>0. Make "X-Y+" command (F3)
+20b2:delta x<0 and delta y<0. Make "X-Y-" command (F1)
+20b4:branch, if delta y positive
+20b5:delta x=0 and delta y<0. Make "Y-" command (F6)
+20b8:delta x=0 and delta y>0. Make "Y+" command (F7)
+20e4:use plot expr1 as charwidth
+20e6:charwidth range [1..15]
+210b:neg exp means num<1
+2110:collect sign&three most sig digits in F3210
+213f:branch to teletype code
+2140:branch to card reader code
+2141:this is punched tape reader code
+2142:send 0 to device (lower nibble), assuming a start code
+2145:continue, if still receiving
+2146:F0=1 when X-OFF received, else 0
+2147:monitor RB line from device
+2149:clear IBS after device becomes ready
+214a:fire OBS. Looks like a start signal for transmission ?
+2151:whatever this does...
+2154:continue, if still receiving
+2155:F0=1 when X-OFF received, else 0
+2156:kill bit8. Makes it a 7bit ASCII
+2157:default return code, continue reading
+2159:ignore 0x00
+215b:ignore 0x7f
+215d:echo incoming X-OFF, set rc=1
+215e:set pointer to read buffer
+215f:put byte in read buffer
+2160:increment read buffer pointer
+2163:continue if CR received
+2165:branch to special CR handling for teletype
+216f:skip X-OFF if not teletype
+219d:branch, if device is teletype (tape punch unit)
+219e:branch, if device is cassette tape
+21ea:get pointer to active device table entry
+2217:^ERR55_illegal_BT_argument
+221c:branch, if device is not cassette tape
+2264:error, if device type 2
+2265:  or 3
+2268:error, if device type < 6
+22e9:done, if device is not cassette tape
+22f9:clear IBS 
+22fa:wait for input data strobe IBS
+2300:read number from stack
+2301:error when negative value
+2302:make zero when negative exponent (<1)
+2303:error when exp >= 10
+2304:OK, when exp=04
+2305:OK, when exp<=03
+2308:save exp(0..4) in F4
+230c:skip current nibble
+230e:done, if F4=0
+230f:point PC to next nibble
+2311:  read it
+2312:  and put it in F5
+2315:process next nibble
+231c:save 2*F3210
+2324:add saved value to F3210 (that makes 10*F3210 finally
+2329:and add new nibble
+2343:input device should be ready now
+2344:if not ready, select CO
+2345:  and skip rest of statement (do nothing)
+2347:get adress of alpha variable
+2348:write character into alpha variable
+234e:in trace mode, read back character and echo to CO device
+2352:test if special function key was pressed (IB9)
+2353:skip first linenumber argument
+235c:n2(modifier_hex)
+235d:n1(modifier_hex)
+235f:print text HEX(
+239a:ORIGCODE=B L1899
+23a5:continue, if device type is 4 (tape punch unit), else illegal
+23a7:test on token "OPEN"
+23ab:test on token "END"
+23ae:send leader/trailer code
+23af:return to regular CO device
+23b0:skip over given filename
+23b2:branch, if not an array designator "A()" is specified
+23bf:branch, if alphanumeric output
+23c4:punch CR (plus LF)
+23c7:punch RUBOUT (2x)
+23d2:address of operator stack pointer
+23d3:read byte from stack
+23d5:branch, if operator code 0xFE "HEX()" found
+23da:copy length msd
+23db:copy length lsd
+23dd:get length msd
+23e2:punch hex byte
+23e4:decrement hex counter
+23e6:continue loop
+23eb:no alpha type, try numeric expression
+23ec:set "alpha"-flag 
+23ef:AUX14=0000
+23f4:set "numeric"-flag
+241a:all other devices branch here
+241b:come here, if device type is 5 or 6 (tape punch unit or cards readers)
+2427:PC=stack pointer
+2428:peek into stack
+2429:UNKNOWN condition. Special content on stack ???
+242b:copy HEX value in KHKL
+242e:PC=address of receiving variable
+242f:write 8bit value in alpha variable
+2432:done if not in trace mode
+2435:adjust stack pointer as if we popped 4 16bit values
+2438:use NUL character for BIN() result
+2442:PC=address of variable
+2444:branch, if operator HEX() found
+2445:read first byte of alpha variable
+2446:move byte to F3210
+2453:test if "C"arry mode
+2454:set operation mode flag: _add(0x8)
+2456:set operation mode flags: _add(0x8) and _carry(0x4)
+2457:store mode in AUX11
+2459:PC=byte counter of arg1 and arg2
+245a:copy byte counters to AUX0
+245b:copy string length of arg1 to F3210
+245d:clear carry marker
+245f:copy address pointer to arg1...
+2460: ... into AUX1
+2461:adjust address pointer to last nibble
+2463:and copy into AUX10
+2464:get mode
+2465:branch, if arg2 is a constant
+2466:get byte counters of arg1 and arg2
+2467:copy string length of arg2 to F3210
+2469:PC=address pointer to arg2
+246a:adjust address pointer to last nibble
+246c:and copy into AUX13
+246e:branch, if arg2 is a constant
+246f:copy byte counters to PC
+2471:decrement byte counter of arg2
+2473:branch, if arg2 already at its end
+2474:update byte counters in AUX12
+2476:read next character from arg2 (right-to-left)
+2477:copy byte to F7F5
+247a:get mode
+247b:branch, if not in "C"arry mode
+247c:transfer carry marker into ALU carry
+247f:transfer ALU carry into carry marker
+2480:get address pointer to current arg1 position
+2481:write result into arg1 position
+2483:adjust address pointer to current arg1 position
+2485:use NUL for arg2 character if arg2 has already ended
+2488:copy constant byte to F7F5
+248a:branch, if no "C"arry operation
+248b:clear constant byte in "C"arry mode, so constant byte will be added only once
+248d:store modified operation mode
+248f:set operation mode flag: _arg2_const_required(0x2) and _arg2max_is_7(0x1)
+2491:bool 8
+2493:bool E
+2495:bool 6
+2499:set operation mode flag: _bool(0x0)
+249a:AUX11 hold logical operation code
+249d:copy bool-mode to F1
+249e:branch, if arg2 is a constant
+249f:PC=byte counter of arg1 and arg2
+24a1:decrement byte counter of arg2
+24a3:branch, if arg2 still has characters
+24a4:else copy unchanged byte from arg1 to result
+24a7:save changed byte counter to AUX12
+24a8:PC=address of next byte from arg2 variable
+24a9:read next byte from arg2 variable, increment arg2 pointer AUX13
+24aa:copy byte from arg2 into F7F5
+24ad:save first nibble result in KH
+24ae:copy other nibbles from arg1, arg2 to F4F5
+24b1:save second nibble result in KL
+24b2:PC=pointer to arg1
+24b3:write result byte into arg1
+24b5:increment pointer to arg1
+24b8:copy the constant arg2 to F7F5
+24ba:branch, if regular bool operation (not rotate)
+24bc:shift left F6F4 (this is arg1)
+24be:shift overflow bit in (that makes it a rotate)
+24bf:decrement rotate counter
+24c0:repeat as necessary
+24c1:copy result to KHKL
+24c4:init loop counter
+24c5:init result
+24c6:KL=pattern 0011
+24c7:test msb of arg1
+24c8:KL=pattern 1100
+24c9:F2=pattern 0001 (arg1=0) or 0100 (arg1=1)
+24ca:test msb of arg2
+24cb:F2=pattern 0010 (arg1=0) or 1000 (arg1=1)
+24cc:F2=<bool mode> and <pattern>
+24cd:result shift left
+24cf:"shift in" 1 if bit to be set
+24d0:shift left arg1
+24d1:shift left arg2
+24d2:increment loop counter
+24d3:repeat loop (4 bits)
+24db:restore mode from AUX11
+24dc:branch, if _arg2max_is_7
+24e2:get logical operator code
+24e3:set flag for constant arg2
+24e4:copy constant (or rotate count) into logical operator code
+24e6:and save in AUX11
+24ed:branch, if _arg2_const_required
+24f0:AUX12=string length info
+24f2:AUX13=address of var arg2
+24f3:AUX10=address of var arg1
+24f5:allow only 0x31..0x37
+24f8:F5=number of places to rotate
+251c:PC=byte counter of arg1 and arg2
+251d:decrement byte counter of arg1
+251f:save changed byte counter of arg1 and arg2
+2520:branch, if all bytes of arg1 done
+2521:PC=pointer to arg1
+2522:PC=logical operation code
+2523:return next byte from arg1
+2527:branch to exit statement, if not in TRACE mode
+2528:get mode
+2529:branch to exit statement, if called from _bool function
+252a:for _add function, get original byte counters of arg1 and arg2
+252e:if all bytes of arg1 processed, exit statement
+2530:get address pointer of begin of arg1
+2531:read next byte from arg1
+2532:copy byte to KHKL
+252c:decrement byte counter of arg1
+252f:update adjusted byte counters in AUX0
+2567:clear 16 nibbles ram[0000] to [000F]
+256a:AUX0=0013
+256b:accept components (sign,period or digit)
+256d:branch, if AUX12=xx00
+256e:branch, if digit found
+256f:branch, if sign found
+2570:branch, if exp found
+2571:we found a period. now, accept only exp and digit
+2573:branch, if plus sign found
+2574:mark negative mantissa in KH=1
+2576:we found a digit. accept more digits now
+2577:increase mantissa digit counter (F2)
+257a:collected 14 digits? too much->force ill number error
+257d:mask out sign
+257f:we are in the exponent portion now. accept only sign or digits
+2581:branch, if digit found
+2582:branch, if nothing found
+2583:branch, if plus sign found
+2584:mark negative exponent in KL=1
+2585:accept only digits
+2587:increase exponent digit counter (F1)
+2588:more than 2 exp digits? too much->force ill number error
+2589:if 2nd exp digit found,move 1st exp digit to "exp high" position
+258c:branch to ill number error, if no exponent given
+258d:branch to ill number error, if no mantissa given
+258f:PC=0002
+2590:AUX0=0002
+2594:PC=AUX12=AUX12-1
+2597:done, if PC2PC1=00
+2599:read from [AUX10],AUX10=AUX10+2
+259b:skip blanks
+259c:set flag F4=2 (period found)
+259d:branch, if char = "."
+259e:set flag F4=8 (sign found)
+259f:branch, if plus or minus sign
+25a1:branch, if char not 0x30..0x3F
+25a4:set flag F4=1 (digit found)
+25a6:branch to ill number error, if not "E"
+25a8:set flag F4=4 (exp found)
+25a9:mask out only wanted component
+25aa:branch to ill number error, if wanted component not found
+#
+26fe:ORIGCODE=B L26FA
+26ff:ORIGCODE=B L26DC
+#
+26ff:Patch18
+2793:set mask for expected characters (here decimal point, digits and signs)
+2795:branch, if not found
+2796:branch, if digit found
+2797:branch, if sign found
+2798:branch, if E character found
+2799:else, decimal point was found. Now allow E character, but disallow decimal point
+279b:now, digit was found. Now allow E character
+279c:Increment significant digits counter
+279d:branch, if max significant digits reached
+279e:disallow signs
+27a0:disallow digits
+27a2:copy "valid BASIC number" counter to F7F6
+27a4:set mask for expected characters (here decimal digits and signs)
+27a6:branch, if not found
+27a7:branch, if sign found
+27a8:else, digit was found. Increment exponent digit counter
+27a9:branch, if max exponent digits not reached
+27aa:disallow any character
+27ac:now, only digits allowed
+27ae:branch, if exponent digits found
+27b0:else, reduce "valid BASIC number" counter by one (???) and copy to F3F2
+27b2:branch, if significant digits found
+27b3:else, set "valid BASIC number" counter to zero
+27b5:PC=0000, workarea
+27b6:clear 16 nibbles in workarea
+27b8:PC=0003 (first significant digit in float number)
+27b9:write F2 there, assuming F2 is leading digit
+27ba:branch, if there is no 2nd digit to store
+27bb:write F3 into first sig digit of result (F3 is now leading digit)
+27bc:write F2 into next sig digit of result (F2 is now last digit)
+27bd:PC=0000
+27be:set result exponent to +01 because we have two sig digits in result
+27bf:PC=0000
+27c1:pop TRACE mode from operator stack
+27c3:restore original TRACE mode
+27c7:increment the "valid BASIC number" counter
+27c9:count down string length counter
+27cd:branch, if string length counter is zero
+27ce:PC=address of current character
+27cf:read character and byte-increment address pointer
+27d1:skip space, but count it as valid character
+27d2:F4=2 marks decimal point
+27d3:branch, if decimal point found
+27d4:F4=8 marks plus or minus sign
+27da:F4=1 marks decimal digit 0..9
+27dc:reset marker
+27df:F4=4 marks E character
+27e0:mask marker with bits from F5
+27e1:branch, if none of the expected characters found
+27e3:increment the "valid BASIC number" counter
+27ed:branch, if no quoted character found
+27ef:read character and advance source pointer
+27f0:copy character in F5F4
+27f2:closing quote must follow
+2803:branch, if flagged as dataload operation
+2806:branch, if DATA SAVE BT (cassette tape)
+2809:branch, if DATA LOAD BT (cassette tape)
+280e:test if "<"
+280f:F7 bit0 is "<"
+2811:test if ">"
+2813:F7 bit2 is ">"
+2816:F7 bit1 is "="
+2817:branch, if at least one of <=> found
+281e:clear result F3F2
+2820:get length of variable (min length is always 1)
+2821:decrement AUX13
+2824:branch, if not at end of variable
+2826:get pointer to variable
+2827:read byte and byte-increment pointer
+2829:increment resulting position
+282d:branch, if upper nibble does not match
+2830:branch, if lower nibble does not match
+2831:we have equality, but if "=" was not specified, continue the search
+2832:otherwise, matching position found
+2834:we have "greater than" condition, but if ">" was not specified, continue the search
+2835:otherwise, matching position found
+2836:we have "lower than" condition, but if "<" was not specified, continue the search
+2837:otherwise, matching position found
+28c0:use timing pattern for header block (DIL0)
+28c2:use timing pattern for non-header block (DIL1)
+2945:indicate that a 16bit value is on stack
+2949:read our device type
+294a:continue, if device type is 4,5,6 (plotter, tape punch unit, card reader)
+294b:   else illegal statement error
+294f:indicate that a 32bit value is on stack
+2954:indicate that we found a literal string or alpha variable
+295d:indicate that we found a numeric variable
+2998:PRINT token found, this is HEXPRINT command!
+2999:branch to regular HEX( command
+29c2:branch to regular list handler,if not "DC"
+29c3:jump table index for "LIST DC"
+2a11:get file number from disk_work_area in F4
+2a16:PC now has matching file table pointer (even for the default 0 file)
+2a29:set bit0 in ram0128 (read-after-write flag)
+2a43:test on letter "R"
+2a46:test on letter "F"
+2a48:test on letter "T"
+2a52:save bit3 of current device type in F0
+2a55:  and copy it to ram0128(disk work area)
+2a58:test on '#' character for file number
+2a59:not '#'
+2a5d:set ram0129(disk_work_area+1) to given file number
+2a61:test on '/' character for device address
+2a63:no device address?
+2a65:set ram0129(disk_work_area+1) to 0(=explicit device address given)
+2a68:set ram0129(disk_work_area+1) to 7(=default device)
+2a70:branch to expression parser, if no variable found
+2a7a:branch, if alpha var was found
+2a84:get given sector address
+2a85:save it in AUX14
+2a87:get address of IO buffer
+2a88:put start address of sector data to AUX10
+2a89:get given sector address
+2a8a:strip drive bit off
+2a8b:clear catalog entry counter
+2a8c:test if we just read sector 0
+2a8d:branch, if not sector 0
+2a8e:on sector 0, catalog starts in entry #1
+2a8f:advance sector buffer pointer to next index entry
+2a95:get sector buffer pointer
+2a96:read first byte of index entry
+2a97:skip index entry if it is marked invalid
+2a98:branch, if valid or scratched index entry
+2a99:exit here and return 0xF if unused index entry
+2a9c:advance PC to position of file name
+2aa0:branch, if filename found
+2aa1:increment catalog entry counter
+2aa2:repeat for up to 16 entries
+2aa3:get current sector number
+2aa4:clear drive bit
+2aa6:branch, if this is not sector 0
+2aa8:get next catalog sector number
+2aa9:ORIGCODE=TP AUX11 -- Fetch drive bit from disk work area (0x128) and merge into sector address
+2aaa:PC=current sector number
+2aab:decrement sector number
+2aac:PC=current sector number-1
+2aad:move sector number-1 to F3210
+2aae:get last sector number
+2aaf:compare current sector-1 with last sector
+2ab0:branch, if still not at the end
+2ab1:  else ERR88
+2ab3:get current sector buffer address
+2ab4:get first byte of sector buffer
+2ab5:branch if lower nibble is zero
+2ab6:return 1
+2ab8:return 0
+2abb:get expression result. This is the given sector number
+2acd:remove op type from stack
+2ace:get variable type and length
+2ad0:if length is 1, this alpha var is too small
+2ad1:get address of alpha var
+2ad2:get first 16bit of alpha var. This is the given sector number
+2ad7:branch, if data record
+2ada:error, if data header record. Non-existing data record type
+2adb:branch, if data trailer record
+2adc:normal data record. PC=address of field number
+2add:read field number. AUX0=address of SOV byte
+2ade:AUX12=address of first data field
+2adf:CHCL contains field number in this logical record
+2ad8:^ERR58_expected_data_record
+2ae1:ORIGCODE=SB 2F86 (decrement_current_sector_number_by_1)
+2ae6:loop 64k * 37cy = 3,8sec
+2ae7:wait for byte from disk
+2aed:timeout
+2af2:^ERR67_disk_format_error
+2af4:^ERR71_cannot_find_sector
+2af6:^ERR72_cyclic_read_error
+2afc:if length is 1, this alpha var is too small
+2b00:clear carry and IBS
+2b0b:set command 0x40 "write"
+2b0e:try again if recoverable error
+2b10:test "read-after-write flag" ("$" in DATASAVE or SAVE command)
+2b11:set "verify" command
+2b13:try again if error
+2b14:copy address of sector buffer
+2b17:echo return code to controller
+2b18:clear IBS flag
+2b19:wait for (any) response from disk controller
+2b1c:clear IBS flag
+2b1d:wait for response from disk controller
+2b1e:branch to error if verify not successful
+2b26:ORIGCODE=BT 0x8,CL  >7
+2b39:advance PC to "ending sector number"
+2b41:advance PC to "ending sector number"
+2b42:set new ending sector in file table
+2b4e:pop variable type (receiving the next sector) from operator stack
+2b4f:PC=file table, current sector address
+2b50:F3210=current sector number (after read)
+2b51:strip off the drive bit
+2b52:PC=file table, current sector address
+2b53:write back clean sector number(F3210)
+2b54:PC=operator stack pointer
+2b55:read last (already popped off) entry = variable type
+2b56:branch, if other than numeric variable
+2b5a:PC=file table, current sector address
+2b5b:copy address to AUX0 for copy_string routine
+2b5c:set length = 2 byte
+2b5e:set type ?
+2b5f:and set PC=TRACE mode address
+2b60:set TRACE OFF
+2b61:copy to F0
+2b62:PC=temp location to hold TRACE mode
+2b63:copy TRACE mode there
+2b64:write new sector number (AUX0) into alpha var
+2b65:PC=temp location to hold TRACE mode
+2b66:read old TRACE mode from temp location
+2b67:copy to F0
+2b68:PC=TRACE mode address
+2b69:restore TRACE mode from F0
+2b8a:^ERR64_sector_not_on_disk_or_disk_not_scratched
+2b8c:^ERR65_disk_hardware_malfunction
+2b8e:^ERR66_format_key_engaged
+2b91:clear checksum
+2b94:read from sector buffer
+2b95:and byte-increment buffer pointer
+2b96:copy byte to K
+2b98:adjust checksum
+2b9a:fire OBS (send byte to controller)
+2b9c:increment byte counter
+2b9e:write next byte until sector done
+2ba0:get checksum
+2ba2:fire OBS (write checksum)
+2baa:fire OBS (echo last byte?)
+2bb1:get end of user text area
+2bb2:AUX0 =sector buffer pointer
+2bb3:AUX10=sector buffer pointer
+2bb5:retry on error
+2bb6:PC=sector buffer pointer
+2bb7:read first byte of sector
+2bba:get end of user text area
+2bbb:AUX0=sector buffer pointer
+2bbd:clear byte counter
+2bc0:clear IBS status
+2bc1:wait for incoming byte from disk
+2bc2:get sector buffer pointer
+2bc3:write byte in sector buffer
+2bc5:checksum
+2bc7:increment sector buffer pointer
+2bc9:increment byte counter
+2bcd:sector done, wait for checksum
+2bce:checksum match?
+2bd1:^ERR68_lrc_error
+2bd4:this loads sector msb and lsb in PC
+2bd5:decrement sector number (drive counts from 0)
+2bd8:with the dumb controller, the leftmost sector bit indicates the drive
+2bd9:copy drive bit into command byte
+2bda:indicate command will follow (IOB3)
+2bde:send command byte
+2be0:copy sector msb but kill bit7 (limit to 32k sectors)
+2be4:copy sector lsb
+2bdc:transfer K to io-address bus(but no /ABS issued)
+2be8:set IBS=1 selects data from ALU to K register and set CPB=0
+2bed:set IBS=0 selects data from device bus to K register and set CPB=1
+2bee:wait for echoed cmd from device
+2bef:compare echoed cmd with sent cmd
+2beb:fire /OBS
+2bf1:return F1=0x0 if "OK"
+2bf3:return F1=0xF otherwise
+2bf8:done if response was "OK"
+2bf9:reset IBS
+2bfa:wait for status byte
+2c07:advance PC to "current sector number" location
+2c2c:0xA0 is command mode code
+2c2e:set AB to command mode (no /ABS)
+2c31:echo lower nibble
+2c5f:point PC to rom text "ERROR IN SECTOR "
+2c60:set length of text
+2c67:test HALT/STEP key
+2c6d:done, if device type 3 (disk)
+2c6f:done, if device type B (disk plus bit3)
+2c71:branch, if "DC" was found
+2c72:branch, if "DA" was found
+2c73:branch, if "BA" was found
+2c74:anything other is panic
+2c75:branch, if "DC" was found
+2c76:branch, if "DA" was found
+2c77:branch, if "BA" was found
+2c78:anything other is panic
+2c7b:branch, if "DC" was found
+2c7c:branch, if "DA" was found
+2c7d:anything other is panic
+2c7e:branch, if "DC" was found
+2c7f:branch, if "DA" was found
+2c80:anything other is panic
+2cb0:new value for pointer to next free symbol table entry -> clears DIM variables!
+2cc6:branch, if variable address is in COM symbol table
+2cce:copy current device type to ram004d
+2cdb:error, if no array designator found
+2cdc:error, if not an alpha array
+2cec:branch, if array too small (ERR60)
+2cee:exit here when in parse mode
+2d66:move drive select bit (dumb ctrlr) to bit15
+2d67:fixed first index sector is 0
+2d68:copy sector number to AUX11
+2d6c:set command = 00 / READ
+2d6d:retrieve sector number from AUX11
+2d6f:repeat until disk says Ok
+2d70:copy IO buffer address pointer plus 2
+2d71:   to sector buffer address pointer
+2d91:PC=end of user text area
+2d92:advance PC by 1 byte
+2e13:test on token CLOSE
+2e17:test on token ALL
+2e19:for all 7 file number entries (0..6)
+2e1a:position to top of file table
+2e1d:done, if just parsing
+2e1e:skip first 2 bytes (device address)
+2e1f:wipe next 6 bytes
+2e22:loop until F3=0
+2e23:done
+2e25:test on character '#'
+2e28:only for 1 entry
+2e2e:test on token "OPEN"
+2e2f:no extra tokens -> branch to pure DATASAVE DC
+2e40:done, if just parsing
+2e43:save starting sector in AUX15
+2e46:save current sector in AUX14
+2e63:test on token "TEMP"
+2ea6:test on character '/'
+2ea8:/ is not allowed here, only #n
+2eaa:^ERR81_/xyy_device_specification_illegal
+2f03:branch if not DSKIP END
+2f10:address of "starting sector number"
+2f12:save address of "current sector number" in AUX11
+2f15:get starting or current sector number
+2f16:increment it by F3210
+2f18:and write new current sector number into file table
+2f19:point PC to "ending sector number"
+2f1b:get ending sector number
+2f1c:see if current sector number is beyond ending sector number
+2f1e:move ending sector number to F3210
+2f1f:restore address of "current sector number" from AUX11
+2f20:set current sector number to ending sector number
+2f27:branch if something to do
+2f28:else done
+2f3e:point PC to "ending sector number"
+2f3f:fetch ending sector number to F3210
+2f40:save pointer to "ending sector number"
+2f43:read first byte of sector
+2f44:bit 2 signals data trailer record
+2f46:advance PC to 2nd byte of sector buffer
+2f48:get 2 bytes from sector buffer
+2f58:test on token "BEG"
+2f5c:point PC to starting sector number
+2f5e:point PC to current sector number
+2f60:current sector# = start sector#
+2f68:done, if DBACKSPACE 0
+2f6b:test bit7 of sector header byte
+2f74:get end of user text area
+2f75:AUX0 =sector buffer pointer
+2f76:AUX10=sector buffer pointer
+2f78:retry on error
+2f7b:get number of sectors to backspace
+2f7c:minus 1
+2f81:point PC to "starting sector number"
+2f82:get starting sector number
+2f83:if backspacing before the starting sector number
+2f84:branch to DBACKSPACE BEG
+2f85:else done
+2f87:F3210=0001
+2f89:get current sector number
+2f8a:PC=current sector number - 1
+2f8e:new current sector number to AUX11
+2f8f:and file table
+2ff4:set protected program flag
+3001:set IBS status
+3002:set I/O address to 0xA0 (command mode)
+3004:load K into AB
+3006:0x00 indicates that this is a 2200A..T machine. This also sets 'slow' mode
+3007:fire /OBS
+3009:timeout ?
+300a:only accept 'dumb disk' indicator 0xC0 here
+300e:test READY/BUSY signal
+3012:get current sector number
+3013:PC=current sector number + 1
+3015:into F3210
+3017:update current sector number
+3018:adjust PC for ending sector number
+301a:get ending sector number
+301c:did we hit the end of file ?
+3020:PC=IO buffer address
+3021:AUX1=IO buffer address+2
+3023:PC points to starting sector address
+3024:store that in AUX0
+3025:ORIGCODE=SB 302A (Let_PC=AUX1+4) -- after patch code, SB 2D5B
+3054:copy address of sector buffer
+3059:clear error flag
+30a5:set bit3 of ram0129
+30c7:clear character counter
+30c8:read 1st char
+30c9:store in F3F2
+30cb:read 2nd char
+30cd:exit, if no match
+30ce:inc character counter
+30d0:return code 0: strings match
+30d2:return code 1: strings do not match
+30cf:loop for 8 characters max
+310e:ORIGCODE=XORI 0x8,PC4,PC4
+3161:ORIGCODE=SB 0396 (get_PC_from_ram[PC])
+3247:skip forward until begin of next logical record found
+324b:set flag for alpha variable
+3251:set flag for numeric variable
+3253:just syntax check here. comma must follow
+3254:then, check next variable
+325b:PC=address of logical sector
+325c:read SOV byte
+325e:branch, if not EOB
+325f:read next sector
+3260:until next good data sector found
+3261:test the MSB of SOV byte. high means alpha data follows
+3262:SOV for numeric data found. Invert type of current variable to satisfy following bit test
+3263:bit test F7
+3265:PC=pointer to data location 
+3266:branch, if alpha data follows
+3269:PC=address of data field
+3270:adjust PC to point to next SOV
+3271:AUX12=address of next data field
+3274:PC=address of data field
+32a8:ORIGCODE=BT 0x1,ST1 <19
+32b4:branch, if no digit found
+3301:point PC to rom text "REMOVABLE CATALOG<cr>"
+3303:set text length = 18 char
+330d:address of LIST device
+3311:print 8 spaces before headline
+3317:set text length = 14 char
+3318:point PC to rom text "FIXED CATALOG<cr>"
+331b:text "INDEX SECTORS = "
+3322:text "END CAT. AREA = "
+3328:text "CURRENT END   = "
+334f:set text length = 16 char
+338a:ORIGCODE=SB 31EA (PC=AUX1+8)
+339a:test HALT/STEP key
+33c3:fetch variable for starting sector
+33c9:point to "starting sector number"
+33cc:fetch variable for ending sector
+33d2:point to "ending sector number"
+33d5:fetch variable for current sector
+33dd:get sector
+33de:mask the drive bit (dumb controller mode)
+#
+3402:test on token PRINT
+3407:test on token READ
+340c:test on token INPUT
+3410:test on token RE
+3414:branch, if just parsing
+3415:store target symbol address in AUX10
+3417:store target symbol dimensions in AUX11
+341c:parse 3 char mat command
+341f:save 1st char
+3422:save 2nd char
+3423:3rd char in CHCL
+3425:test 3rd on N (IDN,CON,TRN)
+3427:test 1st on T
+3429:test 2nd on R
+342c:test 1st on Z
+342e:test 2nd on E
+3430:test 3rd on R
+3433:test 1st on C
+3434:test 2nd on O
+3435:test 3rd on N
+3437:test 1st on I
+3438:test 2nd on D
+3439:test 3rd on N
+343b:test 2nd on N
+343d:test 3rd on V
+343f:check for mat plus/minus/mult/equal
+3442:store op1 symbol address in AUX12
+3444:store op1 symbol dimensions in AUX13
+3448:plus sign detected. Store "b" in KH
+344a:minus sign detected. Store "d" in KH
+344c:mult sign detected
+344d:store parse pointer
+344e:Store 0 in KH
+3456:copy symbol name in F3F2, F0 is already zero
+345c:move symbol dimensions to PC
+345d:  and to AUX1
+345e:branch, if only numeric allowed
+3460:store symbol type (0 or 1) in F7
+3461:branch, if just parsing
+3463:branch, if symbol already exists
+3464:save AUX1...
+3465:... in AUX15
+3467:complete symbol type to array type
+3469:adjust PC to 0004
+346a:here, mat creates an new array per default as 10 x 10 matrix
+346c:write 1st dimension=10
+346e:write 2nd dimension=10
+3471:also allocates memory for it
+3472:restore AUX1...
+3473:... from AUX15
+3475:adjust PC to begin of symbol content
+3476:return symbol type in F0
+347e:get address of target symbol
+3480:point AUX10 to begin of array values
+3481:branch, if ZER(F7=0) or CON(F7=1) operation
+3483:save_1st_dimension_to_KHKL
+3486:compare dimensions (check square matrix)
+348a:calc number of array elements
+348b:   into PC
+348c:isolate CON mode in F6
+348d:decrement array element counter
+348e:get matrix element pointer
+3490:update matrix element pointer
+3491:get array element counter
+3493:repeat for each matrix element
+3494:done, if ZER(F7=0) or CON(F7=1) operation
+3495:for IDN operation, we now have a ZER matrix
+3497:restore 1st dimension from KHKL
+3498:F3210 is now the dimension*16
+3499:set_filler_to_1
+349c:decrement dimension counter
+349d:break loop if done
+349f:PC points to next element. go <dimension> elements ahead
+34a2:store end value for address
+34a4:write float sign 0
+34a5:write float low exp 0
+34a6:PC=PC+2
+34a7:write float high exp 0
+34a8:write float sig digit (0 for ZER, 1 for CON)
+34a9:PC=PC+2
+34aa:continue writing 0 digits
+34ad:until address end value reached
+3527:value stack has 16bit value
+35fc:save AUX3 ...
+35fd:.. in AUX0
+36f7:save AUX3...
+36f8:...in AUX0
+36fc:re-set the run flag in ST2-1
+36fd:from AUX0...
+36fe:...restore AUX3
+3770:branch to SR, if no left parenthesis
+3772:mark 1st dimension given
+3776:mark 2nd dimension given
+3778:get target symbol dimensions in PC
+3779:branch, if target symbol is alphanumeric
+3786:get target symbol dimensions in PC
+3787:branch, if target symbol is numeric
+3788:set alpha bit in result signature
+377c:default 1 for 2nd dimension
+377e:branch, if 2nd dimension missing
+3780:move 2nd dimension to F6F5
+3783:move 1st dimension to F3F2
+3785:move 2nd dimension to F1F0
+378d:set default length=16
+378e:write back target signature
+3790:unread last character
+3792:branch, if comma found
+3794:branch, if colon found (end of statement)
+3796:branch, if CR found (end of line)
+3797:read length parameter
+379d:branch, if length <= 64
+379f:modify target length with parsed length parameter
+37f7:save AUX3 ...
+37f8:.. in AUX0
+37fb:save AUX3 ...
+37fc:.. in AUX0
+#
+3800:store source pointer position...
+3801:... in AUX14
+3803:token IF
+3807:token ON
+3809:branch to $IF ON handler
+380b:restore source pointer position from AUX14
+380e:test "T"
+3811:test "R"
+3814:test "A"
+3817:test "N"
+3818:branch to $TRAN handler
+381a:restore source pointer position from AUX14
+381d:token PACK
+381f:branch to $PACK handler
+3822:token UNPACK
+3824:branch to $UNPACK handler
+3826:test "G"
+3829:test "I"
+382c:test "O"
+382e:branch to $GIO handler
+395f:eat the comment part
+3971:read alpha argument
+3977:read alpha argument
+3982:test on closing parenthesis after arg2
+3983:end of statement ?
+3985:end of line ?
+3986:store current source pointer
+3987:branch if end detected
+3988:else read arg3 alpha argument
+399c:gio cat1 "control"
+3be9:expect "("
+3bed:set marker for "D"
+3bef:set marker for "F"
+3bf4:expect "="
+3bfb:expect ")"
+3d02:test "F"
+3d04:test "R"
+3d07:test "O"
+3d0a:test "M"
+#
+2001:parse-mode(=0)? 
+2005:parse-mode(=0)? 
+200d:parse-mode(=0)? 
+201c:parse-mode(=0)? 
+2026:parse-mode(=0)? 
+202a:parse-mode(=0)? 
+2036:parse-mode(=0)? 
+203f:parse-mode(=0)? 
+2050:parse-mode(=0)? 
+2070:parse-mode(=0)? 
+20ba:parse-mode(=0)? 
+20bf:parse-mode(=0)? 
+20d4:parse-mode(=0)? 
+20d9:parse-mode(=0)? 
+20dc:parse-mode(=0)? 
+20e0:parse-mode(=0)? 
+20e3:parse-mode(=0)? 
+219a:parse-mode(=0)? 
+21a7:parse-mode(=0)? 
+21d3:parse-mode(=0)? 
+2219:parse-mode(=0)? 
+2221:parse-mode(=0)? 
+2230:parse-mode(=0)? 
+224c:parse-mode(=0)? 
+2259:parse-mode(=0)? 
+2261:parse-mode(=0)? 
+2274:parse-mode(=0)? 
+22fe:parse-mode(=0)? 
+2339:parse-mode(=0)? 
+2424:parse-mode(=0)? 
+2440:parse-mode(=0)? 
+24e9:parse-mode(=0)? 
+253b:parse-mode(=0)? 
+2542:parse-mode(=0)? 
+2549:parse-mode(=0)? 
+2552:parse-mode(=0)? 
+25f4:parse-mode(=0)? 
+26af:parse-mode(=0)? 
+26b7:parse-mode(=0)? 
+2704:parse-mode(=0)? 
+270d:parse-mode(=0)? 
+2790:parse-mode(=0)? 
+27e6:parse-mode(=0)? 
+281b:parse-mode(=0)? 
+2847:parse-mode(=0)? 
+2868:parse-mode(=0)? 
+2882:parse-mode(=0)? 
+288c:parse-mode(=0)? 
+299f:parse-mode(=0)? 
+29a3:parse-mode(=0)? 
+2a30:parse-mode(=0)? 
+2a3c:parse-mode(=0)? 
+2a4c:parse-mode(=0)? 
+2a5b:parse-mode(=0)? 
+2a64:parse-mode(=0)? 
+2a67:parse-mode(=0)? 
+2a6b:parse-mode(=0)? 
+2a80:parse-mode(=0)? 
+2aba:parse-mode(=0)? 
+2acc:parse-mode(=0)? 
+2af9:parse-mode(=0)? 
+2c15:parse-mode(=0)? 
+2c6a:parse-mode(=0)? 
+2c91:parse-mode(=0)? 
+2cae:parse-mode(=0)? 
+2cb3:parse-mode(=0)? 
+2cb6:parse-mode(=0)? 
+2cd0:parse-mode(=0)? 
+2cdd:parse-mode(=0)? 
+2ced:parse-mode(=0)? 
+2d0e:parse-mode(=0)? 
+2d19:parse-mode(=0)? 
+2d7a:parse-mode(=0)? 
+2d99:parse-mode(=0)? 
+2da0:parse-mode(=0)? 
+2da8:parse-mode(=0)? 
+2dd7:parse-mode(=0)? 
+2de8:parse-mode(=0)? 
+2e03:parse-mode(=0)? 
+2e1c:parse-mode(=0)? 
+2e3f:parse-mode(=0)? 
+2e66:parse-mode(=0)? 
+2e74:parse-mode(=0)? 
+2e83:parse-mode(=0)? 
+2eb5:parse-mode(=0)? 
+2f04:parse-mode(=0)? 
+2f25:parse-mode(=0)? 
+2f33:parse-mode(=0)? 
+2f5a:parse-mode(=0)? 
+2f65:parse-mode(=0)? 
+2f7a:parse-mode(=0)? 
+2fb4:parse-mode(=0)? 
+2fbb:parse-mode(=0)? 
+307b:parse-mode(=0)? 
+308d:parse-mode(=0)? 
+30a3:parse-mode(=0)? 
+3106:parse-mode(=0)? 
+3243:parse-mode(=0)? 
+3252:parse-mode(=0)? 
+3255:parse-mode(=0)? 
+327d:parse-mode(=0)? 
+3281:parse-mode(=0)? 
+32bb:parse-mode(=0)? 
+32cf:parse-mode(=0)? 
+3308:parse-mode(=0)? 
+33b8:parse-mode(=0)? 
+33c7:parse-mode(=0)? 
+33d0:parse-mode(=0)? 
+33d9:parse-mode(=0)? 
+#
+299a:0=run mode, 1=immediate mode
+29c5:0=run mode, 1=immediate mode
+2cad:0=run mode, 1=immediate mode
+2cb9:0=run mode, 1=immediate mode
+2355:clear_status_of_IB9
+2965:clear ST4-2 (end-of-data flag)
+3244:clear ST4-2 (end-of-data flag)
+2989:set ST4-2 (end-of-data flag)
+2ae0:set ST4-2 (end-of-data flag)
+21d9:test carry
+231b:test carry
+2321:test carry
+2323:test carry
+2328:test carry
+232d:test carry
+250b:test carry
+25a5:test carry
+261f:test carry
+2623:test carry
+263e:test carry
+2641:test carry
+2684:test carry
+268b:test carry
+269b:test carry
+2784:test carry
+27db:test carry
+2833:test carry
+289e:test carry
+28f1:test carry
+2913:test carry
+292d:test carry
+2931:test carry
+29ba:test carry
+2aeb:test carry
+2b06:test carry
+2bcb:test carry
+2c33:test carry
+2c48:test carry
+2c56:test carry
+2d3c:test carry
+2e92:test carry
+2f8b:test carry
+2fa0:test carry
+3119:test carry
+31e5:test carry
+3224:test carry
+32a1:test carry
+2621:set carry
+2688:set carry
+289b:set carry
+3221:set carry
+2100:set carry
+204a:clear carry
+2066:clear carry
+21b2:clear carry
+21d6:clear carry
+21eb:clear carry
+232f:clear carry
+2368:clear carry
+2383:clear carry
+23e3:clear carry
+2470:clear carry
+2479:clear carry
+24a0:clear carry
+24bb:clear carry
+2509:clear carry
+251b:clear carry
+252b:clear carry
+25a2:clear carry
+261d:clear carry
+263c:clear carry
+265b:clear carry
+2662:clear carry
+2680:clear carry
+2698:clear carry
+26e3:clear carry
+2744:clear carry
+2765:clear carry
+2782:clear carry
+27af:clear carry
+27c6:clear carry
+27d8:clear carry
+27e2:clear carry
+2828:clear carry
+2859:clear carry
+28ee:clear carry
+29b7:clear carry
+2a13:clear carry
+2a90:clear carry
+2a9b:clear carry
+2b90:clear carry
+2b9b:clear carry
+2bbf:clear carry
+2bc8:clear carry
+2c4d:clear carry
+2c53:clear carry
+3112:clear carry
+3217:clear carry
+326a:clear carry
+329b:clear carry
+32af:clear carry
+32c2:clear carry
+335a:clear carry

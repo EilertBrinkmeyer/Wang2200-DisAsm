@@ -1,0 +1,47 @@
+#
+7e00:superpatchboard_00_decide_if_tape_resync_after_flux_timeout
+7e01:superpatchboard_01_read_sync_pattern_until_timeout
+7e02:superpatchboard_02_get_LOP/WP_state_in_KH
+7e03:superpatchboard_03
+7e04:superpatchboard_04
+7e05:superpatchboard_05
+7e06:superpatchboard_06
+7e07:superpatchboard_07
+7e08:superpatchboard_08
+7e09:superpatchboard_09
+7e0A:superpatchboard_0A
+7e0B:superpatchboard_0B
+7e0C:superpatchboard_0C
+7e0D:superpatchboard_0D
+7e0E:superpatchboard_0E
+7e0F:superpatchboard_0F
+7e10:superpatchboard_10
+#
+7e20:set tape device in idle mode (stop tape/leave head in)
+7e22:set tape device to backward read operation
+7e2f:shift left F2
+7e30:branch if received bit from tape is 0
+7e31:  else shift a 1 in
+7e32:prepare for 8.7ms timeout
+7e35:clear IBS
+7e37:branch if IBS (one bit received)
+7e3d:KH=0 if IB5=0
+7e3e:branch if IB5 not active
+7e3f:KH=1 if IB5=1
+7e48:recalc CSS start
+7e92:save ST2
+7e94:clear run flags
+7e99:restore ST2
+
+7e57:2200B had wrong opcode: BT 0x1,F5  >31
+7e69:2200B had wrong opcode: ORI 0xF,0,PC2
+7e6b:2200B had wrong opcode: ORI 0xF,0,PC2
+
+7e63:parse-mode(=0)? 
+7e1e:test carry
+7e39:test carry
+7e50:branch, if current device type = 0
+7e51:for other devices, clear ram[0050-0053]
+7e5a:get operator stack pointer
+7e88:test carry
+7e8b:clear carry

@@ -1,0 +1,447 @@
+01fa:branch, if current device type other than console
+01fb:branch, if program unprotected
+04f5:get operator stack pointer
+#
+0df8:do not round if result is zero -> copy the zero to result
+0df9:read sign of op2
+0dfa:set the "internal last digit" for rounding
+#
+136f:branch, if no line number entered
+1370:jumps back to "execute_next"
+1371:look for word_list_verbs
+1373:branch to code address of recognized token
+1374:otherwise, assume implicit LET and jump directly to its code
+1376:This is immediate execution. look for word_list_commands
+137a:set run mode to "parse-only"
+137b:   and set immediate execution flag
+#
+1956:pop variable type (not needed)
+1957:pop variable address
+1958:and save in AUX0
+195a:restore variable address
+195c:branch, if operator HEX() found
+195d:read first byte of alpha variable
+195e:move byte to F3210
+1964:convert two hex digits to number
+#
+1f43:parameter address for 100usec delay
+#
+200f:save operator type lower nibble in F6
+2012:test on token CLEAR
+2014:branch if RETURN CLEAR
+2015:branch if called via SF key
+2016:branch to standard RETURN handler
+2018:not 1 or 2? ^ERR25
+2019:fill F7 with lower operator type (1 or 2)
+201a:branch to standard called-by-SF-key-handler
+201b:ignore RETURN address and continue with next statement (fall through)
+201f:branch to SF Key handler if not EDIT key
+2021:clear AUX10
+2023:clear IB9
+202a:save KHKL in F4F5
+202d:restore KHKL from F4F5
+2030:branch, if not a SF key
+2031:goto SF key handler (edit mode)
+2033:branch, if CR pressed (exit edit mode)
+2036:branch, if BACKSPACE pressed
+2037:branch, if 0xEx key pressed
+203c:branch to "line too long", if 192 bytes reached
+203d:write key to line buffer
+203f:advance AUX8 by 1 byte
+2043:handle CR->exit edit mode
+204f:branch, if E6
+2050:branch, if E5
+2057:any other 0xEx key issues a clear screen and exits edit mode
+2065:clear IB9 flag
+2103:get number of lines of currently entered line
+210a:end of loop
+210b:send reverse index (line up) to CO
+210c:decrement output line counter
+210d:repeat for all lines
+210f:send another CR to CO
+2111:clean the line flag
+2114:send asterisk to CO, this is the EDIT prompt
+2115:get IO buffer pointer
+2117:clear byte counter
+211a:F3210=AUX1
+211b:PC=AUX11
+211c:compare both
+2128:read next byte from edit line
+212a:done, if 00 found
+212b:increment byte counter
+212e:branch if token
+2132:next byte from line
+2133:print token from CLCH
+2137:next byte from line
+215e:get start of IO buffer
+215f:AUX1=IObuf+2
+2162:PC=AUX1+0x200
+2164:F3210=PC (might be the upper limit of edit buffer)
+2165:AUX1=PC
+2169:write 0x00 in location [AUX8]
+#
+2402:test on token PRINT
+2407:test on token READ
+240c:test on token INPUT
+2410:test on token RE
+2414:branch, if just parsing
+2415:store target symbol address in AUX10
+2417:store target symbol dimensions in AUX11
+241c:parse 3 char mat command
+241f:save 1st char
+2422:save 2nd char
+2423:3rd char in CHCL
+2425:test 3rd on N (IDN,CON,TRN)
+2427:test 1st on T
+2429:test 2nd on R
+242c:test 1st on Z
+242e:test 2nd on E
+2430:test 3rd on R
+2433:test 1st on C
+2434:test 2nd on O
+2435:test 3rd on N
+2437:test 1st on I
+2438:test 2nd on D
+2439:test 3rd on N
+243b:test 2nd on N
+243d:test 3rd on V
+243f:check for mat plus/minus/mult/equal
+2442:store op1 symbol address in AUX12
+2444:store op1 symbol dimensions in AUX13
+2448:plus sign detected. Store "b" in KH
+244a:minus sign detected. Store "d" in KH
+244c:mult sign detected
+244d:store parse pointer
+244e:Store 0 in KH
+2456:copy symbol name in F3F2, F0 is already zero
+245c:move symbol dimensions to PC
+245d:  and to AUX1
+245e:branch, if only numeric allowed
+2460:store symbol type (0 or 1) in F7
+2461:branch, if just parsing
+2463:branch, if symbol already exists
+2464:save AUX1...
+2465:... in AUX15
+2467:complete symbol type to array type
+2469:adjust PC to 0004
+246a:here, mat creates an new array per default as 10 x 10 matrix
+246c:write 1st dimension=10
+246e:write 2nd dimension=10
+2471:also allocates memory for it
+2472:restore AUX1...
+2473:... from AUX15
+2475:adjust PC to begin of symbol content
+2476:return symbol type in F0
+247e:get address of target symbol
+2480:point AUX10 to begin of array values
+2481:branch, if ZER(F7=0) or CON(F7=1) operation
+2483:save_1st_dimension_to_KHKL
+2486:compare dimensions (check square matrix)
+248a:calc number of array elements
+248b:   into PC
+248c:isolate CON mode in F6
+248d:decrement array element counter
+248e:get matrix element pointer
+2490:update matrix element pointer
+2491:get array element counter
+2493:repeat for each matrix element
+2494:done, if ZER(F7=0) or CON(F7=1) operation
+2495:for IDN operation, we now have a ZER matrix
+2497:restore 1st dimension from KHKL
+2498:F3210 is now the dimension*16
+2499:set_filler_to_1
+249c:decrement dimension counter
+249d:break loop if done
+249f:PC points to next element. go <dimension> elements ahead
+24a2:store end value for address
+24a4:write float sign 0
+24a5:write float low exp 0
+24a6:PC=PC+2
+24a7:write float high exp 0
+24a8:write float sig digit (0 for ZER, 1 for CON)
+24a9:PC=PC+2
+24aa:continue writing 0 digits
+24ad:until address end value reached
+2527:value stack has 16bit value
+25fc:save AUX3 ...
+25fd:.. in AUX0
+26f7:save AUX3...
+26f8:...in AUX0
+26fc:re-set the run flag in ST2-1
+26fd:from AUX0...
+26fe:...restore AUX3
+2770:branch to SR, if no left parenthesis
+2772:mark 1st dimension given
+2776:mark 2nd dimension given
+2778:get target symbol dimensions in PC
+2779:branch, if target symbol is alphanumeric
+2786:get target symbol dimensions in PC
+2787:branch, if target symbol is numeric
+2788:set alpha bit in result signature
+277c:default 1 for 2nd dimension
+277e:branch, if 2nd dimension missing
+2780:move 2nd dimension to F6F5
+2783:move 1st dimension to F3F2
+2785:move 2nd dimension to F1F0
+278d:set default length=16
+278e:write back target signature
+2790:unread last character
+2792:branch, if comma found
+2794:branch, if colon found (end of statement)
+2796:branch, if CR found (end of line)
+2797:read length parameter
+279d:branch, if length <= 64
+279f:modify target length with parsed length parameter
+27f7:save AUX3 ...
+27f8:.. in AUX0
+27fb:save AUX3 ...
+27fc:.. in AUX0
+#
+3000:store source pointer position...
+3001:... in AUX14
+3003:token IF
+3007:token ON
+3009:branch to $IF ON handler
+300b:restore source pointer position from AUX14
+300e:test "T"
+3011:test "R"
+3014:test "A"
+3017:test "N"
+3018:branch to $TRAN handler
+301a:restore source pointer position from AUX14
+301d:token PACK
+301f:branch to $PACK handler
+3022:token UNPACK
+3024:branch to $UNPACK handler
+3026:test "G"
+3029:test "I"
+302c:test "O"
+302e:branch to $GIO handler
+315f:eat the comment part
+3171:read alpha argument
+3177:read alpha argument
+3182:test on closing parenthesis after arg2
+3183:end of statement ?
+3185:end of line ?
+3186:store current source pointer
+3187:branch if end detected
+3188:else read arg3 alpha argument
+319c:gio cat1 "control"
+33e9:expect "("
+33ed:set marker for "D"
+33ef:set marker for "F"
+33f4:expect "="
+33fb:expect ")"
+3502:test "F"
+3504:test "R"
+3507:test "O"
+350a:test "M"
+#
+3e8d:use timing pattern for header block (DIL0)
+3e8f:use timing pattern for non-header block (DIL1)
+#
+41fd:store current source text pointer
+4b88:test "input mode" flag
+4b89:when not in input mode, back to 2200B behaviour
+4c03:test on token MOVE
+4c08:test on token COPY
+4c0c:test on token CONVERT
+4c12:test on character "O"
+4c17:found keyword SORT
+4c19:test on character M
+4c1d:test on character G
+4c1f:found keyword MERGE
+4c26:test on character A
+4c29:test on character C
+4c2b:test on character H (found keyword SEARCH)
+4c2c:get search variable or string
+4c32:set F3 bit 0 if "<" found
+4c36:set F3 bit 2 if ">" found
+4c39:set F3 bit 1 if "=" found
+4c3a:continue, if one or more relational operators found
+4c45:test on token STEP
+4cbe:test on character -
+4cc9:test on character -
+4ffb:restore source text pointer (points behind MAT token)
+#
+0af9:parse-mode(=0)?
+1391:parse-mode(=0)?
+13bd:parse-mode(=0)?
+13d5:parse-mode(=0)?
+13e2:parse-mode(=0)?
+1955:parse-mode(=0)?
+2013:parse-mode(=0)?
+219c:parse-mode(=0)?
+21a0:parse-mode(=0)?
+21cb:parse-mode(=0)?
+21e1:parse-mode(=0)?
+2203:parse-mode(=0)?
+220a:parse-mode(=0)?
+2211:parse-mode(=0)?
+221a:parse-mode(=0)?
+239f:parse-mode(=0)?
+23f5:parse-mode(=0)?
+247d:parse-mode(=0)?
+24b2:parse-mode(=0)?
+24f3:parse-mode(=0)?
+2508:parse-mode(=0)?
+2513:parse-mode(=0)?
+2545:parse-mode(=0)?
+2561:parse-mode(=0)?
+2593:parse-mode(=0)?
+2604:parse-mode(=0)?
+26f0:parse-mode(=0)?
+26f4:parse-mode(=0)?
+26fa:parse-mode(=0)?
+2707:parse-mode(=0)?
+277a:parse-mode(=0)?
+2798:parse-mode(=0)?
+3056:parse-mode(=0)?
+307b:parse-mode(=0)?
+3087:parse-mode(=0)?
+3094:parse-mode(=0)?
+30a5:parse-mode(=0)?
+30bd:parse-mode(=0)?
+30c6:parse-mode(=0)?
+30e1:parse-mode(=0)?
+30ed:parse-mode(=0)?
+3178:parse-mode(=0)?
+3189:parse-mode(=0)?
+3192:parse-mode(=0)?
+339e:parse-mode(=0)?
+33a6:parse-mode(=0)?
+33b2:parse-mode(=0)?
+33c1:parse-mode(=0)?
+33f6:parse-mode(=0)?
+3403:parse-mode(=0)?
+34f2:parse-mode(=0)?
+350d:parse-mode(=0)?
+3800:parse-mode(=0)?
+3804:parse-mode(=0)?
+380c:parse-mode(=0)?
+381b:parse-mode(=0)?
+3825:parse-mode(=0)?
+3829:parse-mode(=0)?
+3835:parse-mode(=0)?
+383e:parse-mode(=0)?
+384f:parse-mode(=0)?
+386f:parse-mode(=0)?
+38b9:parse-mode(=0)?
+38be:parse-mode(=0)?
+38d3:parse-mode(=0)?
+38d8:parse-mode(=0)?
+38db:parse-mode(=0)?
+38df:parse-mode(=0)?
+38e2:parse-mode(=0)?
+399a:parse-mode(=0)?
+39a7:parse-mode(=0)?
+39d3:parse-mode(=0)?
+3a19:parse-mode(=0)?
+3a21:parse-mode(=0)?
+3a30:parse-mode(=0)?
+3a4c:parse-mode(=0)?
+3a59:parse-mode(=0)?
+3a61:parse-mode(=0)?
+3a74:parse-mode(=0)?
+3b01:parse-mode(=0)?
+3bc5:parse-mode(=0)?
+3c98:parse-mode(=0)?
+3d12:parse-mode(=0)?
+3d1a:parse-mode(=0)?
+3d43:parse-mode(=0)?
+3d4c:parse-mode(=0)?
+3dcd:parse-mode(=0)?
+3e0f:parse-mode(=0)?
+3e35:parse-mode(=0)?
+3e4f:parse-mode(=0)?
+3e59:parse-mode(=0)?
+4030:parse-mode(=0)?
+403c:parse-mode(=0)?
+404c:parse-mode(=0)?
+405b:parse-mode(=0)?
+4064:parse-mode(=0)?
+4067:parse-mode(=0)?
+406b:parse-mode(=0)?
+4080:parse-mode(=0)?
+40ba:parse-mode(=0)?
+40cc:parse-mode(=0)?
+40f9:parse-mode(=0)?
+4215:parse-mode(=0)?
+426a:parse-mode(=0)?
+4291:parse-mode(=0)?
+42ae:parse-mode(=0)?
+42b3:parse-mode(=0)?
+42b6:parse-mode(=0)?
+42d0:parse-mode(=0)?
+42dd:parse-mode(=0)?
+42ed:parse-mode(=0)?
+430e:parse-mode(=0)?
+4319:parse-mode(=0)?
+437a:parse-mode(=0)?
+4399:parse-mode(=0)?
+43a0:parse-mode(=0)?
+43a8:parse-mode(=0)?
+43d7:parse-mode(=0)?
+43e8:parse-mode(=0)?
+43f2:parse-mode(=0)?
+4403:parse-mode(=0)?
+441c:parse-mode(=0)?
+443f:parse-mode(=0)?
+4466:parse-mode(=0)?
+4474:parse-mode(=0)?
+4483:parse-mode(=0)?
+44b5:parse-mode(=0)?
+4504:parse-mode(=0)?
+4525:parse-mode(=0)?
+4533:parse-mode(=0)?
+455a:parse-mode(=0)?
+4565:parse-mode(=0)?
+457a:parse-mode(=0)?
+45b4:parse-mode(=0)?
+45bb:parse-mode(=0)?
+467b:parse-mode(=0)?
+468d:parse-mode(=0)?
+46a3:parse-mode(=0)?
+4706:parse-mode(=0)?
+4843:parse-mode(=0)?
+4852:parse-mode(=0)?
+4855:parse-mode(=0)?
+487d:parse-mode(=0)?
+4881:parse-mode(=0)?
+48b9:parse-mode(=0)?
+48d3:parse-mode(=0)?
+4908:parse-mode(=0)?
+49b8:parse-mode(=0)?
+49c7:parse-mode(=0)?
+49d0:parse-mode(=0)?
+49d9:parse-mode(=0)?
+4b0e:parse-mode(=0)?
+4b18:parse-mode(=0)?
+4b1b:parse-mode(=0)?
+4b76:parse-mode(=0)?
+4b81:parse-mode(=0)?
+4ba8:parse-mode(=0)?
+4bb2:parse-mode(=0)?
+4c47:parse-mode(=0)?
+4c4b:parse-mode(=0)?
+4c8b:parse-mode(=0)?
+4caa:parse-mode(=0)?
+4cc2:parse-mode(=0)?
+4cce:parse-mode(=0)?
+4d15:parse-mode(=0)?
+4d24:parse-mode(=0)?
+4d42:parse-mode(=0)?
+4d4a:parse-mode(=0)?
+4d92:parse-mode(=0)?
+4d98:parse-mode(=0)?
+4d9f:parse-mode(=0)?
+4e03:parse-mode(=0)?
+4e13:parse-mode(=0)?
+4e17:parse-mode(=0)?
+4eb5:parse-mode(=0)?
+4ed4:parse-mode(=0)?
+4edd:parse-mode(=0)?
+4f0d:parse-mode(=0)?
+4f1f:parse-mode(=0)?
+4f2d:parse-mode(=0)?
+4f32:parse-mode(=0)?
